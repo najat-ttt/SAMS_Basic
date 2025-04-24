@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "241623526441",
+    "firebase_url": "https://sams8-3-2025-default-rtdb.firebaseio.com",
+    "project_id": "sams8-3-2025",
+    "storage_bucket": "sams8-3-2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241623526441:android:cc11659691c99c424f8038",
+        "android_client_info": {
+          "package_name": "com.example.sams_basic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZk-0O762ba30uaKg4Z8mKVD10cV0okoM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241623526441:android:af145909d6302fb64f8038",
+        "android_client_info": {
+          "package_name": "com.example.untitled"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZk-0O762ba30uaKg4Z8mKVD10cV0okoM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
