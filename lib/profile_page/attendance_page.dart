@@ -16,37 +16,65 @@ class _AttendancePageState extends State<AttendancePage> {
   String? currentSessionId;
   DateTime selectedDate = DateTime.now();
   DateTime? currentSessionDate;
+  // Add a flag to track if we're in edit mode
+  bool isEditingPreviousSession = false;
 
   final List<String> courses = [
-    "Mathematics",
-    "Humanities",
     "Digital Logic Design",
-    "Electrical and Electronic Engineering",
     "Discrete Mathematics",
+    "Electrical and Electronic Engineering",
+    "Humanities",
+    "Mathematics"
   ];
 
   final List<String> sections = ["A", "B", "C"];
 
   List<Map<String, dynamic>> students = [];
+  // Add a list to store previous sessions
+  List<Map<String, dynamic>> previousSessions = [];
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Attendance System"),
+        title: Text(isEditingPreviousSession ? "Edit Previous Attendance" : "Attendance System"),
         backgroundColor: Colors.blueGrey,
+        actions: [
+          // Add a button to access previous sessions
+          if (!isEditingPreviousSession)
+            IconButton(
+              icon: Icon(Icons.history),
+              onPressed: _showPreviousSessionsDialog,
+              tooltip: "Previous Sessions",
+            ),
+          // Add a back button when editing previous sessions
+          if (isEditingPreviousSession)
+            IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                setState(() {
+                  isEditingPreviousSession = false;
+                  currentSessionId = null;
+                  currentSessionDate = null;
+                  students.clear();
+                });
+              },
+              tooltip: "Back to Current",
+            ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(5.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Course, Section Selection and Date Picker Row
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(12.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -54,7 +82,7 @@ class _AttendancePageState extends State<AttendancePage> {
                       Row(
                         children: [
                           Icon(Icons.calendar_today, color: Colors.blueGrey),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 5),
                           Text(
                             "Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}",
                             style: const TextStyle(
@@ -64,12 +92,12 @@ class _AttendancePageState extends State<AttendancePage> {
                           ),
                           const Spacer(),
                           TextButton(
-                            onPressed: () => _selectDate(context),
+                            onPressed: isEditingPreviousSession ? null : () => _selectDate(context),
                             child: const Text("Change Date"),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 5),
 
                       // Course and Section Selection
                       Row(
@@ -90,14 +118,14 @@ class _AttendancePageState extends State<AttendancePage> {
                                   child: Text(course, overflow: TextOverflow.ellipsis),
                                 );
                               }).toList(),
-                              onChanged: (value) {
+                              onChanged: isEditingPreviousSession ? null : (value) {
                                 setState(() {
                                   selectedCourse = value;
                                 });
                               },
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           // Section Dropdown
                           Expanded(
                             flex: 2,
@@ -105,7 +133,7 @@ class _AttendancePageState extends State<AttendancePage> {
                               value: selectedSection,
                               isExpanded: true,
                               decoration: const InputDecoration(
-                                labelText: "Section",
+                                labelText: "Select Section",
                                 border: OutlineInputBorder(),
                               ),
                               items: sections.map((section) {
@@ -114,7 +142,7 @@ class _AttendancePageState extends State<AttendancePage> {
                                   child: Text("$section"),
                                 );
                               }).toList(),
-                              onChanged: (value) {
+                              onChanged: isEditingPreviousSession ? null : (value) {
                                 setState(() {
                                   selectedSection = value;
                                   _fetchStudents();
@@ -128,7 +156,7 @@ class _AttendancePageState extends State<AttendancePage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
 
               // Session Info
               if (currentSessionId != null)
@@ -140,7 +168,9 @@ class _AttendancePageState extends State<AttendancePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Attendance Session - ${DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)}",
+                          isEditingPreviousSession
+                              ? "Editing Attendance - ${DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)}"
+                              : "Attendance Session - ${DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)}",
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -208,15 +238,16 @@ class _AttendancePageState extends State<AttendancePage> {
                     alignment: WrapAlignment.spaceEvenly,
                     spacing: 16.0,
                     children: [
-                      ElevatedButton(
-                        onPressed: currentSessionId == null ? _startNewSession : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          minimumSize: const Size(150, 50),
+                      if (!isEditingPreviousSession)
+                        ElevatedButton(
+                          onPressed: currentSessionId == null ? _startNewSession : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            minimumSize: const Size(150, 50),
+                          ),
+                          child: const Text("New Session"),
                         ),
-                        child: const Text("New Session"),
-                      ),
-                      if (currentSessionId != null)
+                      if (currentSessionId != null && !isEditingPreviousSession)
                         ElevatedButton(
                           onPressed: _endCurrentSession,
                           style: ElevatedButton.styleFrom(
@@ -224,6 +255,16 @@ class _AttendancePageState extends State<AttendancePage> {
                             minimumSize: const Size(150, 50),
                           ),
                           child: const Text("End Session"),
+                        ),
+                      // Save changes button for editing mode
+                      if (isEditingPreviousSession)
+                        ElevatedButton(
+                          onPressed: _saveEditedAttendance,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            minimumSize: const Size(150, 50),
+                          ),
+                          child: const Text("Save Changes"),
                         ),
                     ],
                   ),
@@ -368,9 +409,9 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   Future<void> _loadExistingAttendance() async {
-    if (selectedCourse == null || selectedSection == null) return;
+    if (selectedCourse == null || selectedSection == null || currentSessionDate == null) return;
 
-    final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+    final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate!);
 
     try {
       for (var student in students) {
@@ -449,7 +490,7 @@ class _AttendancePageState extends State<AttendancePage> {
     }
 
     final student = students[index];
-    final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+    final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate);
 
     try {
       setState(() {
@@ -502,7 +543,7 @@ class _AttendancePageState extends State<AttendancePage> {
     });
 
     try {
-      final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+      final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate);
       final batch = _firestore.batch();
 
       // Date-level document
@@ -576,6 +617,202 @@ class _AttendancePageState extends State<AttendancePage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error ending session: $e")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // NEW METHODS FOR EDITING PREVIOUS SESSIONS
+
+  // Method to fetch and show previous completed sessions
+  Future<void> _showPreviousSessionsDialog() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Fetch completed sessions for the selected course and section
+      final query = await _firestore
+          .collection('attendance_sessions')
+          .where('status', isEqualTo: 'completed')
+          .orderBy('date', descending: true)
+          .limit(30) // Limit to recent 30 sessions
+          .get();
+
+      previousSessions = query.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'id': doc.id,
+          'course': data['course'],
+          'section': data['section'],
+          'date': (data['date'] as Timestamp).toDate(),
+          'dateString': data['dateString'],
+        };
+      }).toList();
+
+      // Show dialog with previous sessions
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          builder: (context) => _buildPreviousSessionsDialog(),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching previous sessions: $e")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Build dialog to show previous sessions
+  Widget _buildPreviousSessionsDialog() {
+    return AlertDialog(
+      title: const Text("Previous Attendance Sessions"),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 400,
+        child: previousSessions.isEmpty
+            ? const Center(child: Text("No previous sessions found"))
+            : ListView.builder(
+          itemCount: previousSessions.length,
+          itemBuilder: (context, index) {
+            final session = previousSessions[index];
+            return ListTile(
+              title: Text("${session['course']} - Section ${session['section']}"),
+              subtitle: Text(DateFormat('yyyy-MM-dd').format(session['date'])),
+              trailing: const Icon(Icons.edit),
+              onTap: () {
+                Navigator.of(context).pop(); // Close dialog
+                _editPreviousSession(session);
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text("Cancel"),
+        ),
+      ],
+    );
+  }
+
+  // Method to load a previous session for editing
+  Future<void> _editPreviousSession(Map<String, dynamic> session) async {
+    setState(() {
+      isLoading = true;
+      isEditingPreviousSession = true;
+      selectedCourse = session['course'];
+      selectedSection = session['section'];
+      currentSessionId = session['id'];
+      currentSessionDate = session['date'];
+      students.clear();
+    });
+
+    try {
+      // Fetch students for this section
+      final querySnapshot = await _firestore
+          .collection('students')
+          .where('section', isEqualTo: selectedSection)
+          .orderBy('roll')
+          .get();
+
+      students = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          "rollNo": data['roll'] ?? 0,
+          "id": data['roll']?.toString() ?? '0',
+          "name": data['name'] ?? 'Unknown',
+          "status": "Absent",
+          "documentId": doc.id,
+        };
+      }).toList();
+
+      // Load attendance data from the selected previous session
+      await _loadExistingAttendance();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Previous session loaded for editing")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading previous session: $e")),
+      );
+      setState(() {
+        isEditingPreviousSession = false;
+        currentSessionId = null;
+        currentSessionDate = null;
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Method to save changes to the edited attendance
+  Future<void> _saveEditedAttendance() async {
+    if (currentSessionId == null || !isEditingPreviousSession) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate!);
+      final batch = _firestore.batch();
+
+      // Update the timestamp at date level
+      final dateRef = _firestore.collection('attendance_records').doc(dateStr);
+      batch.set(dateRef, {
+        'lastUpdated': FieldValue.serverTimestamp()
+      }, SetOptions(merge: true));
+
+      // Process each student's attendance
+      for (final student in students) {
+        final rollRef = dateRef
+            .collection('sections')
+            .doc(selectedSection)
+            .collection('rolls')
+            .doc(student['id']);
+
+        batch.set(rollRef, {
+          'lastUpdated': FieldValue.serverTimestamp()
+        }, SetOptions(merge: true));
+
+        final courseRef = rollRef.collection('courses').doc(selectedCourse);
+        batch.set(courseRef, {
+          'status': student['status'],
+          'timestamp': FieldValue.serverTimestamp(),
+          'sessionId': currentSessionId,
+          'editedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+
+      await batch.commit();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Attendance updated successfully")),
+      );
+
+      // Return to normal mode
+      setState(() {
+        isEditingPreviousSession = false;
+        currentSessionId = null;
+        currentSessionDate = null;
+        students.clear();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error saving attendance changes: $e")),
       );
     } finally {
       setState(() {

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:math';
 import '../login_page/login_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -23,6 +26,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late String _email;
   late String _password;
   File? _profileImage;
+  static const String _profileImagePathKey = 'profile_image_path';
 
   @override
   void initState() {
@@ -30,6 +34,28 @@ class _ProfilePageState extends State<ProfilePage> {
     _name = widget.name;
     _email = widget.email;
     _password = widget.password;
+    _loadProfileImage();
+  }
+
+  // Load the profile image path from SharedPreferences
+  Future<void> _loadProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final imagePath = prefs.getString(_profileImagePathKey);
+
+    if (imagePath != null) {
+      final file = File(imagePath);
+      if (await file.exists()) {
+        setState(() {
+          _profileImage = file;
+        });
+      }
+    }
+  }
+
+  // Save the profile image path to SharedPreferences
+  Future<void> _saveProfileImagePath(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_profileImagePathKey, path);
   }
 
   void _editProfile(BuildContext context) {
@@ -82,10 +108,29 @@ class _ProfilePageState extends State<ProfilePage> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
+      // Copy the image to app's documents directory to ensure persistence
+      final String newPath = await _saveImageToAppDirectory(image.path);
+
       setState(() {
-        _profileImage = File(image.path);
+        _profileImage = File(newPath);
       });
+
+      // Save the path for future app launches
+      await _saveProfileImagePath(newPath);
     }
+  }
+
+  // Save image to application documents directory to ensure persistence
+  Future<String> _saveImageToAppDirectory(String sourcePath) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final String fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final String targetPath = '${directory.path}/$fileName';
+
+    // Copy the image
+    final File sourceFile = File(sourcePath);
+    final File newImage = await sourceFile.copy(targetPath);
+
+    return newImage.path;
   }
 
   void _logout(BuildContext context) {

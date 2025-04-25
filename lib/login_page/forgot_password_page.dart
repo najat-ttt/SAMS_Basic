@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -52,7 +53,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       controller: _emailController,
                       decoration: InputDecoration(
                         prefixIcon: Icon(
-                          Icons.email,
+                          Icons.email_outlined,
                           color: Colors.blueGrey,
                         ),
                         labelText: "Email",
@@ -74,13 +75,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 child: _isLoading
                     ? CircularProgressIndicator()
                     : ElevatedButton(
-                  onPressed: _simulateSendResetEmail,
+                  onPressed: _sendPasswordResetEmail,
                   style: ElevatedButton.styleFrom(
-                    fixedSize: Size(200, 50),
+                    fixedSize: Size(140, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
-                    backgroundColor: Color(0xFF36455F),
+                    backgroundColor: Color(0xFF1A6075),
                   ),
                   child: Text(
                     "Send Email",
@@ -110,7 +111,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     );
   }
 
-  Future<void> _simulateSendResetEmail() async {
+  Future<void> _sendPasswordResetEmail() async {
     final String email = _emailController.text.trim();
 
     if (email.isEmpty) {
@@ -120,20 +121,31 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-    await Future.delayed(Duration(seconds: 2)); // Simulate delay
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Password reset email sent to $email")),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message;
+      switch (e.code) {
+        case 'invalid-email':
+          message = "The email address is not valid.";
+          break;
+        case 'user-not-found':
+          message = "No user found with this email.";
+          break;
+        default:
+          message = "An error occurred. Please try again.";
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Simulated: Password reset email sent to $email"),
-      ),
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 }

@@ -1,439 +1,684 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:excel/excel.dart' as excel_lib;
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:open_file/open_file.dart';
+import 'dart:io';
 
-class AttendanceReportsPage extends StatefulWidget {
-  const AttendanceReportsPage({super.key});
+class AttendanceReportPage extends StatefulWidget {
+  const AttendanceReportPage({super.key});
 
   @override
-  _AttendanceReportsPageState createState() => _AttendanceReportsPageState();
+  _AttendanceReportPageState createState() => _AttendanceReportPageState();
 }
 
-class _AttendanceReportsPageState extends State<AttendanceReportsPage> {
-  DateTime selectedDate = DateTime.now();
-  String selectedSection = 'A'; // Default section
-  String selectedCourse = 'Discrete Math'; // Default course
+class _AttendanceReportPageState extends State<AttendanceReportPage> {
+  String? selectedCourse;
+  String? selectedSection;
+  bool isLoading = false;
+  DateTime startDate = DateTime.now().subtract(const Duration(days: 30));
+  DateTime endDate = DateTime.now();
 
   final List<String> courses = [
-    'Discrete Math',
-    'Digital Logic Design',
-    'Humanities',
-    'Mathematics',
-    'Electrical and Electronic Engineering',
+    "Digital Logic Design",
+    "Discrete Mathematics",
+    "Electrical and Electronic Engineering",
+    "Humanities",
+    "Mathematics"
   ];
 
-  final List<Map<String, dynamic>> students = [
-    {"roll": "2203001", "name": "ABHISHEK CHOWDHURY DIPTA", "status": AttendanceStatus.Pending},
-    {"roll": "2203002", "name": "HAMONTA BISWAS", "status": AttendanceStatus.Pending},
-    {"roll": "2203003", "name": "MD. REJONE AHMED", "status": AttendanceStatus.Pending},
-    {"roll": "2203004", "name": "NAHYAN YASIR IBTEE", "status": AttendanceStatus.Pending},
-    {"roll": "2203005", "name": "MD. SADIKUR RAHMAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203006", "name": "ARONNO KUMAR GHOSH", "status": AttendanceStatus.Pending},
-    {"roll": "2203007", "name": "KAZI MD. TAMZID SHIKTO", "status": AttendanceStatus.Pending},
-    {"roll": "2203008", "name": "HUMAYRA ISLAM MAYSHA", "status": AttendanceStatus.Pending},
-    {"roll": "2203009", "name": "MD. ROHANUL HASAN RIJON", "status": AttendanceStatus.Pending},
-    {"roll": "2203010", "name": "ANONNOY ONIKET", "status": AttendanceStatus.Pending},
-    {"roll": "2203011", "name": "MD. SHAMS SHAHARIAR", "status": AttendanceStatus.Pending},
-    {"roll": "2203012", "name": "ANTU BISWAS", "status": AttendanceStatus.Pending},
-    {"roll": "2203013", "name": "MD. ZAHID HASAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203014", "name": "ABDULLAH HAL KAFI NAFEES", "status": AttendanceStatus.Pending},
-    {"roll": "2203015", "name": "ZUHAYER TAJBID", "status": AttendanceStatus.Pending},
-    {"roll": "2203016", "name": "MD. SHIFAT HASAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203017", "name": "ANIK GHOSH", "status": AttendanceStatus.Pending},
-    {"roll": "2203018", "name": "MD. FARDIN KHAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203019", "name": "APON DATTA", "status": AttendanceStatus.Pending},
-    {"roll": "2203020", "name": "EMON ISLAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203021", "name": "SANJIDA TABASSUM", "status": AttendanceStatus.Pending},
-    {"roll": "2203022", "name": "MUBASHIR AHAMED SIAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203023", "name": "MOSTAFA MARUF IFTY", "status": AttendanceStatus.Pending},
-    {"roll": "2203024", "name": "MD. ADNAN TOWHID", "status": AttendanceStatus.Pending},
-    {"roll": "2203025", "name": "RAHUL CHANDRAW DASH", "status": AttendanceStatus.Pending},
-    {"roll": "2203026", "name": "MD. NAYEM", "status": AttendanceStatus.Pending},
-    {"roll": "2203027", "name": "MD.YEANUR HOSSAIN PARVEZ", "status": AttendanceStatus.Pending},
-    {"roll": "2203028", "name": "MD. MOZAHID ISLAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203029", "name": "AFIUJJAMAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203030", "name": "SADIA FARHANA", "status": AttendanceStatus.Pending},
-    {"roll": "2203031", "name": "MD. MHAFUZ TARAQ FARAZI", "status": AttendanceStatus.Pending},
-    {"roll": "2203032", "name": "FATEMA TUZ ZOHORA BINTE AHASAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203033", "name": "ABHISHEK BHATTACHARJEE", "status": AttendanceStatus.Pending},
-    {"roll": "2203034", "name": "ASHIQUR RAHMAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203035", "name": "MD. TALHA JUBAIR", "status": AttendanceStatus.Pending},
-    {"roll": "2203036", "name": "MD. ROFAZ HASAN RAFIU", "status": AttendanceStatus.Pending},
-    {"roll": "2203037", "name": "MD. NAZMUL HUDA", "status": AttendanceStatus.Pending},
-    {"roll": "2203038", "name": "SUHAIL AHMED TOHA", "status": AttendanceStatus.Pending},
-    {"roll": "2203039", "name": "SHAYM IMRAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203040", "name": "M. M. SAKLAIN", "status": AttendanceStatus.Pending},
-    {"roll": "2203041", "name": "MD. RUBAIAT ISLAM SIAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203042", "name": "MAHAMUD-URR-RASHEED", "status": AttendanceStatus.Pending},
-    {"roll": "2203043", "name": "MD. TAUFIQUR ISLAM RABBI", "status": AttendanceStatus.Pending},
-    {"roll": "2203044", "name": "MD. ISTEAK AHAMED IMON", "status": AttendanceStatus.Pending},
-    {"roll": "2203045", "name": "MD. EYAMIN HOSSAN MOLLA", "status": AttendanceStatus.Pending},
-    {"roll": "2203046", "name": "SHOUMITRO DUTTA ORGHO", "status": AttendanceStatus.Pending},
-    {"roll": "2203047", "name": "TAUSIF UL HUDA", "status": AttendanceStatus.Pending},
-    {"roll": "2203048", "name": "MD.RUHUL AMIN PAPPO", "status": AttendanceStatus.Pending},
-    {"roll": "2203049", "name": "SUPTI PAL", "status": AttendanceStatus.Pending},
-    {"roll": "2203050", "name": "MIRZA WAJIH ALI", "status": AttendanceStatus.Pending},
-    {"roll": "2203051", "name": "SANJIDA AFRIN", "status": AttendanceStatus.Pending},
-    {"roll": "2203052", "name": "MD.SHUVO MIA", "status": AttendanceStatus.Pending},
-    {"roll": "2203053", "name": "MAHDI HOSEN RUAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203054", "name": "TANZIRUL ISLAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203055", "name": "ZARIN TASNIM ELAHI", "status": AttendanceStatus.Pending},
-    {"roll": "2203056", "name": "MUHAMMAD BADRUDDIN TASNIM", "status": AttendanceStatus.Pending},
-    {"roll": "2203057", "name": "FABLIHA NAOWAR NIZAM DEYA", "status": AttendanceStatus.Pending},
-    {"roll": "2203058", "name": "SONGRAM BISWAS", "status": AttendanceStatus.Pending},
-    {"roll": "2203059", "name": "MD.GOLAM RABBANI", "status": AttendanceStatus.Pending},
-    {"roll": "2203060", "name": "MD. ABDULLAH ASH SHAFI", "status": AttendanceStatus.Pending},
-    {"roll": "2203061", "name": "LUBNA SADIA", "status": AttendanceStatus.Pending},
-    {"roll": "2203062", "name": "MAHMUDUL HASAN MAHMUD", "status": AttendanceStatus.Pending},
-    {"roll": "2203063", "name": "SAIF HOSEN", "status": AttendanceStatus.Pending},
-    {"roll": "2203064", "name": "MD. RIFAT HOSSAIN", "status": AttendanceStatus.Pending},
-    {"roll": "2203065", "name": "MD. RADOUNUL ISLAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203066", "name": "MD. MOSAROF HOSSAIN", "status": AttendanceStatus.Pending},
-    {"roll": "2203067", "name": "MD. FAHIM FAYSAL RAFI", "status": AttendanceStatus.Pending},
-    {"roll": "2203068", "name": "MD. NUSHAD JAMAN RAJ", "status": AttendanceStatus.Pending},
-    {"roll": "2203069", "name": "MD TANJID HOSEN RIFAT", "status": AttendanceStatus.Pending},
-    {"roll": "2203070", "name": "MASRUR MAHIN", "status": AttendanceStatus.Pending},
-    {"roll": "2203071", "name": "ZAYED AHMED ANSARY", "status": AttendanceStatus.Pending},
-    {"roll": "2203072", "name": "MD. SHANJID HASAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203073", "name": "MD. JAED HASAN RONI", "status": AttendanceStatus.Pending},
-    {"roll": "2203074", "name": "MD. RAFIUL ISLAM OVI", "status": AttendanceStatus.Pending},
-    {"roll": "2203075", "name": "MD. ABDUS SALAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203076", "name": "MD. RIDUAN ISLAM RIDU", "status": AttendanceStatus.Pending},
-    {"roll": "2203077", "name": "MAHIR HAMI ABRAR", "status": AttendanceStatus.Pending},
-    {"roll": "2203078", "name": "MD. ZUNAID KHAN NAIB", "status": AttendanceStatus.Pending},
-    {"roll": "2203079", "name": "FARZANA FAIZA BORNO", "status": AttendanceStatus.Pending},
-    {"roll": "2203080", "name": "AHMED ANDALEEF ARAFAT KIBRIA SADAB", "status": AttendanceStatus.Pending},
-    {"roll": "2203081", "name": "ANIRUDDHA ROY", "status": AttendanceStatus.Pending},
-    {"roll": "2203082", "name": "PARTHO PROTIM DAS", "status": AttendanceStatus.Pending},
-    {"roll": "2203083", "name": "HRIDIKA MEJABIN AROBI", "status": AttendanceStatus.Pending},
-    {"roll": "2203084", "name": "MUNTASIR ALL MAMUN BADHAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203085", "name": "SHIRSHEN DASGUPTA SHUVRA", "status": AttendanceStatus.Pending},
-    {"roll": "2203086", "name": "SHAHRIAR HASAN SHANTO", "status": AttendanceStatus.Pending},
-    {"roll": "2203087", "name": "MD. RIYON CHOWDHURY", "status": AttendanceStatus.Pending},
-    {"roll": "2203088", "name": "UMMEY RUKAIYA", "status": AttendanceStatus.Pending},
-    {"roll": "2203089", "name": "EVANGEL PURI", "status": AttendanceStatus.Pending},
-    {"roll": "2203090", "name": "MD. NAJMUL ISLAM NAHID", "status": AttendanceStatus.Pending},
-    {"roll": "2203091", "name": "S. M. SHORIFUL ISLAM SAJID", "status": AttendanceStatus.Pending},
-    {"roll": "2203092", "name": "REDWON AHMED EMRAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203093", "name": "MEZBA UDDIN RUBAB", "status": AttendanceStatus.Pending},
-    {"roll": "2203094", "name": "OMI CHOWDHURY", "status": AttendanceStatus.Pending},
-    {"roll": "2203095", "name": "SAMIR YEASIR ALI", "status": AttendanceStatus.Pending},
-    {"roll": "2203096", "name": "MD. RUBAYAT AHSAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203097", "name": "TAIZUL ISLAM ABIR", "status": AttendanceStatus.Pending},
-    {"roll": "2203098", "name": "SIFAT AHASAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203099", "name": "MD. ASADULLAH-HIL GALIB", "status": AttendanceStatus.Pending},
-    {"roll": "2203100", "name": "AYON DHAR", "status": AttendanceStatus.Pending},
-    {"roll": "2203101", "name": "SHEIKH FAHMIDA OMI", "status": AttendanceStatus.Pending},
-    {"roll": "2203102", "name": "MD. RUBAYET HASAN MUGDHO", "status": AttendanceStatus.Pending},
-    {"roll": "2203103", "name": "FARIHA RAHMAN SNEHA", "status": AttendanceStatus.Pending},
-    {"roll": "2203104", "name": "DIGBIJOY BHATTACHARJEE SHUVO", "status": AttendanceStatus.Pending},
-    {"roll": "2203105", "name": "SABIKUNNAHER SHAILA", "status": AttendanceStatus.Pending},
-    {"roll": "2203106", "name": "SOUVIK MOLLIK", "status": AttendanceStatus.Pending},
-    {"roll": "2203107", "name": "NAFISA ANJUM", "status": AttendanceStatus.Pending},
-    {"roll": "2203108", "name": "ANNIE AKTER", "status": AttendanceStatus.Pending},
-    {"roll": "2203109", "name": "MASHRAFI MAHERIN RUMPA MONI", "status": AttendanceStatus.Pending},
-    {"roll": "2203110", "name": "ASHIKUR RAHMAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203111", "name": "RAKIB SARKAR", "status": AttendanceStatus.Pending},
-    {"roll": "2203112", "name": "RAF - RAFIN MAHMUD", "status": AttendanceStatus.Pending},
-    {"roll": "2203113", "name": "JUHYER AL TAUSIF", "status": AttendanceStatus.Pending},
-    {"roll": "2203114", "name": "SUMYEA BINTE ALADIN", "status": AttendanceStatus.Pending},
-    {"roll": "2203115", "name": "SHOHARAB HOSSAIN RAMIM", "status": AttendanceStatus.Pending},
-    {"roll": "2203116", "name": "MD. MIZANUR RAHMAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203117", "name": "SEFAT PERVEZ", "status": AttendanceStatus.Pending},
-    {"roll": "2203118", "name": "JAHIDUL ISLAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203119", "name": "INDRONIL ROY", "status": AttendanceStatus.Pending},
-    {"roll": "2203120", "name": "TAYEF HASAN RAZIN", "status": AttendanceStatus.Pending},
-    {"roll": "2203121", "name": "WAHID GALIB", "status": AttendanceStatus.Pending},
-    {"roll": "2203122", "name": "MST. SEJUTI MONA", "status": AttendanceStatus.Pending},
-    {"roll": "2203123", "name": "ANIKA TASNIM JASIA", "status": AttendanceStatus.Pending},
-    {"roll": "2203124", "name": "ISHTIAK AHMAD ANAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203125", "name": "SAYED SHAFAQUE BIN NUR", "status": AttendanceStatus.Pending},
-    {"roll": "2203126", "name": "MD. LABIB SHAHRIAR MAHI", "status": AttendanceStatus.Pending},
-    {"roll": "2203127", "name": "JIT BANERJEE MITHUN", "status": AttendanceStatus.Pending},
-    {"roll": "2203128", "name": "M.S. SAYEM", "status": AttendanceStatus.Pending},
-    {"roll": "2203129", "name": "MD. ASHIKUR RAHMAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203130", "name": "SRAYOSHI MAHBUB", "status": AttendanceStatus.Pending},
-    {"roll": "2203131", "name": "MD. ASIF SARKER", "status": AttendanceStatus.Pending},
-    {"roll": "2203132", "name": "MST. LAMIA ISLAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203133", "name": "MD. ABDULLAH AL AHAD", "status": AttendanceStatus.Pending},
-    {"roll": "2203134", "name": "NIPU DAS", "status": AttendanceStatus.Pending},
-    {"roll": "2203135", "name": "MD. HARUN-AR-RASHID", "status": AttendanceStatus.Pending},
-    {"roll": "2203136", "name": "SHAHRIAR AHMED SOHAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203137", "name": "MD. IBN SINAN MAHDI", "status": AttendanceStatus.Pending},
-    {"roll": "2203138", "name": "MD. AMANUR RAHMAN AKASH", "status": AttendanceStatus.Pending},
-    {"roll": "2203139", "name": "ABDULLAH AL KAFI", "status": AttendanceStatus.Pending},
-    {"roll": "2203140", "name": "MD. MARUFUR RAHMAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203141", "name": "MOST. SAKILA AKTER", "status": AttendanceStatus.Pending},
-    {"roll": "2203142", "name": "SUVRO DEV ROY", "status": AttendanceStatus.Pending},
-    {"roll": "2203143", "name": "MD. SULTANUL ARIFIN BAYEZEED", "status": AttendanceStatus.Pending},
-    {"roll": "2203144", "name": "ANUP SARKER", "status": AttendanceStatus.Pending},
-    {"roll": "2203145", "name": "MD. MUSHFIQUR RAHMAN MRIDUL", "status": AttendanceStatus.Pending},
-    {"roll": "2203146", "name": "SHEIKH SIAM NAJAT", "status": AttendanceStatus.Pending},
-    {"roll": "2203147", "name": "NAZIFA ANJUM", "status": AttendanceStatus.Pending},
-    {"roll": "2203148", "name": "SAYAD MD. ABDULLAH", "status": AttendanceStatus.Pending},
-    {"roll": "2203149", "name": "MD. IFTEKHAR HOSSAIN", "status": AttendanceStatus.Pending},
-    {"roll": "2203150", "name": "MD. SUMON REZA", "status": AttendanceStatus.Pending},
-    {"roll": "2203151", "name": "ANIK BARAL RONY", "status": AttendanceStatus.Pending},
-    {"roll": "2203152", "name": "MD. ALVI ARAF", "status": AttendanceStatus.Pending},
-    {"roll": "2203153", "name": "S.M MUSFIKUR RAHMAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203154", "name": "A. B. M. RISALAT", "status": AttendanceStatus.Pending},
-    {"roll": "2203155", "name": "NAEEM", "status": AttendanceStatus.Pending},
-    {"roll": "2203156", "name": "MST. SANJIDA NAHAR SHISHIR", "status": AttendanceStatus.Pending},
-    {"roll": "2203157", "name": "AFSHARA TASNIM", "status": AttendanceStatus.Pending},
-    {"roll": "2203158", "name": "HUMAIRA KHATUN", "status": AttendanceStatus.Pending},
-    {"roll": "2203159", "name": "MD.YEASIN ARAFAT", "status": AttendanceStatus.Pending},
-    {"roll": "2203160", "name": "A.N.M. SHARZIL IZAZ MAHMUD", "status": AttendanceStatus.Pending},
-    {"roll": "2203161", "name": "MD. ASHFAQ AHAMED", "status": AttendanceStatus.Pending},
-    {"roll": "2203162", "name": "MD. AJHARUL ISLAM JOBAER", "status": AttendanceStatus.Pending},
-    {"roll": "2203163", "name": "NIYAJ MORSHADIN", "status": AttendanceStatus.Pending},
-    {"roll": "2203164", "name": "RAFIUL ISLAM TUTUL", "status": AttendanceStatus.Pending},
-    {"roll": "2203165", "name": "SADIA HOQUE", "status": AttendanceStatus.Pending},
-    {"roll": "2203166", "name": "TAREQ ABRAR", "status": AttendanceStatus.Pending},
-    {"roll": "2203167", "name": "SHRABANTI SAHA MITHI", "status": AttendanceStatus.Pending},
-    {"roll": "2203168", "name": "SHUVO DIP KAR", "status": AttendanceStatus.Pending},
-    {"roll": "2203169", "name": "KHAN MD. TANZIM ASHIQUE", "status": AttendanceStatus.Pending},
-    {"roll": "2203170", "name": "AAB-E-KOWSOR DIP", "status": AttendanceStatus.Pending},
-    {"roll": "2203171", "name": "NAFIS AHMED JISHAN", "status": AttendanceStatus.Pending},
-    {"roll": "2203172", "name": "MD. SOYEB AZAM SEFAT", "status": AttendanceStatus.Pending},
-    {"roll": "2203173", "name": "MD. NEWAJ SHARIF", "status": AttendanceStatus.Pending},
-    {"roll": "2203174", "name": "SHEMANTA DEBNATH", "status": AttendanceStatus.Pending},
-    {"roll": "2203175", "name": "SUSMOY DEBNATH", "status": AttendanceStatus.Pending},
-    {"roll": "2203176", "name": "MD. ASHSHAHRIL LABIB", "status": AttendanceStatus.Pending},
-    {"roll": "2203177", "name": "MD. ISTIAK AHMED IFTI", "status": AttendanceStatus.Pending},
-    {"roll": "2203178", "name": "A. T. M. ZOBAYERUL ISLAM", "status": AttendanceStatus.Pending},
-    {"roll": "2203179", "name": "SAMIN YASAR SHASSO", "status": AttendanceStatus.Pending},
-    {"roll": "2203180", "name": "SHAFAH TASFIA", "status": AttendanceStatus.Pending},
-    {"roll": "2203181", "name": "BINOY KUMAR CHAKMA", "status": AttendanceStatus.Pending},
-  ];
+  final List<String> sections = ["A", "B", "C"];
 
-  // Function to pick a date
-  void _pickDate(BuildContext context) async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2024),
-      lastDate: DateTime(2030),
+  List<Map<String, dynamic>> students = [];
+  Map<String, Map<String, String>> attendanceData = {};
+  List<String> datesList = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Attendance Reports"),
+        backgroundColor: Colors.blueGrey,
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Filter Section
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Generate Attendance Report",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Course and Section Selection
+                      Row(
+                        children: [
+                          // Course Dropdown
+                          Expanded(
+                            flex: 3,
+                            child: DropdownButtonFormField<String>(
+                              value: selectedCourse,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: "Select Course",
+                                border: OutlineInputBorder(),
+                              ),
+                              items: courses.map((course) {
+                                return DropdownMenuItem(
+                                  value: course,
+                                  child: Text(course, overflow: TextOverflow.ellipsis),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedCourse = value;
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Section Dropdown
+                          Expanded(
+                            flex: 2,
+                            child: DropdownButtonFormField<String>(
+                              value: selectedSection,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                labelText: "Select Section",
+                                border: OutlineInputBorder(),
+                              ),
+                              items: sections.map((section) {
+                                return DropdownMenuItem(
+                                  value: section,
+                                  child: Text("$section"),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedSection = value;
+                                  _fetchStudents();
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Date Range Selection
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("Start Date"),
+                                const SizedBox(height: 8),
+                                InkWell(
+                                  onTap: () => _selectDate(context, true),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(DateFormat('yyyy-MM-dd').format(startDate)),
+                                        const Icon(Icons.calendar_today),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("End Date"),
+                                const SizedBox(height: 8),
+                                InkWell(
+                                  onTap: () => _selectDate(context, false),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(DateFormat('yyyy-MM-dd').format(endDate)),
+                                        const Icon(Icons.calendar_today),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Generate Button
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: isLoading ? null : _generateReport,
+                              icon: const Icon(Icons.refresh),
+                              label: const Text("Generate Report"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Export Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: (attendanceData.isEmpty || isLoading) ? null : _exportToExcel,
+                              icon: const Icon(Icons.table_chart),
+                              label: const Text("Export to Excel"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: (attendanceData.isEmpty || isLoading) ? null : _exportToPdf,
+                              icon: const Icon(Icons.picture_as_pdf),
+                              label: const Text("Export to PDF"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Report Preview
+              Expanded(
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : (attendanceData.isEmpty)
+                    ? const Center(
+                  child: Text(
+                    "No data to display.\nPlease select course, section and date range and generate report.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                )
+                    : Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          "Attendance Report: $selectedCourse - Section $selectedSection",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: SingleChildScrollView(
+                              child: _buildAttendanceTable(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
-    if (picked != null && picked != selectedDate) {
+  }
+
+  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: isStartDate ? startDate : endDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
       setState(() {
-        selectedDate = picked;
+        if (isStartDate) {
+          startDate = picked;
+          if (startDate.isAfter(endDate)) {
+            endDate = startDate;
+          }
+        } else {
+          endDate = picked;
+          if (endDate.isBefore(startDate)) {
+            startDate = endDate;
+          }
+        }
       });
     }
   }
 
-  // Function to mark attendance
-  void _markAttendance(int index, AttendanceStatus status) {
+  Future<void> _fetchStudents() async {
+    if (selectedSection == null) return;
+
     setState(() {
-      students[index]["status"] = status;
+      isLoading = true;
+      students.clear();
     });
-  }
 
-  // Function to filter students by section
-  List<Map<String, dynamic>> _getStudentsBySection(String section) {
-    int startRoll, endRoll;
-    switch (section) {
-      case 'A':
-        startRoll = 2203001;
-        endRoll = 2203060;
-        break;
-      case 'B':
-        startRoll = 2203061;
-        endRoll = 2203120;
-        break;
-      case 'C':
-        startRoll = 2203121;
-        endRoll = 2203181;
-        break;
-      default:
-        startRoll = 2203001;
-        endRoll = 2203181;
+    try {
+      final querySnapshot = await _firestore
+          .collection('students')
+          .where('section', isEqualTo: selectedSection)
+          .orderBy('roll')
+          .get();
+
+      setState(() {
+        students = querySnapshot.docs.map((doc) {
+          final data = doc.data();
+          return {
+            "rollNo": data['roll'] ?? 0,
+            "id": data['roll']?.toString() ?? '0',
+            "name": data['name'] ?? 'Unknown',
+          };
+        }).toList();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching students: $e")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
-    return students.where((student) {
-      int roll = int.parse(student["roll"]);
-      return roll >= startRoll && roll <= endRoll;
-    }).toList();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final sectionStudents = _getStudentsBySection(selectedSection);
+  Future<void> _generateReport() async {
+    if (selectedCourse == null || selectedSection == null || students.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select course and section first")),
+      );
+      return;
+    }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Attendance Report"),
-        backgroundColor: Colors.blueGrey,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.calendar_today),
-            onPressed: () => _pickDate(context),
+    setState(() {
+      isLoading = true;
+      attendanceData.clear();
+      datesList.clear();
+    });
+
+    try {
+      // Generate list of dates between start and end date
+      List<DateTime> datesInRange = [];
+      for (DateTime date = startDate;
+      date.isBefore(endDate.add(const Duration(days: 1)));
+      date = date.add(const Duration(days: 1))) {
+        datesInRange.add(date);
+      }
+
+      // Convert to string format for Firestore queries
+      datesList = datesInRange.map((date) => DateFormat('yyyy-MM-dd').format(date)).toList();
+
+      // Initialize attendance data structure
+      for (var student in students) {
+        attendanceData[student['id']] = {};
+        for (var dateStr in datesList) {
+          attendanceData[student['id']]![dateStr] = '-'; // Default to absent
+        }
+      }
+
+      // Fetch attendance data for each date
+      for (var dateStr in datesList) {
+        final sectionRef = _firestore
+            .collection('attendance_records')
+            .doc(dateStr)
+            .collection('sections')
+            .doc(selectedSection);
+
+        // Get all rolls for this section and date
+        for (var student in students) {
+          final String rollNo = student['id'];
+
+          final courseDoc = await sectionRef
+              .collection('rolls')
+              .doc(rollNo)
+              .collection('courses')
+              .doc(selectedCourse)
+              .get();
+
+          if (courseDoc.exists) {
+            String status = courseDoc.data()?['status'] ?? '-';
+            attendanceData[rollNo]![dateStr] = status == 'Present' ? 'P' : 'A';
+          }
+        }
+      }
+
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error generating report: $e")),
+      );
+    }
+  }
+
+  Widget _buildAttendanceTable() {
+    return DataTable(
+      columnSpacing: 12,
+      headingRowColor: MaterialStateProperty.all(Colors.blueGrey[100]),
+      border: TableBorder.all(color: Colors.grey.shade300),
+      columns: [
+        const DataColumn(
+          label: Text(
+            'Roll',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    DropdownButton<String>(
-                      value: selectedCourse,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedCourse = newValue!;
-                        });
-                      },
-                      items: courses.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                    ),
-                    DropdownButton<String>(
-                      value: selectedSection,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedSection = newValue!;
-                        });
-                      },
-                      items: <String>['A', 'B', 'C']
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text("Section $value"),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ],
+        ),
+        const DataColumn(
+          label: Text(
+            'Name',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        ...datesList.map(
+              (dateStr) => DataColumn(
+            label: SizedBox(
+              width: 75,
+              child: Text(
+                dateStr.substring(5), // Show only MM-DD
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.all(10),
-              itemCount: sectionStudents.length,
-              itemBuilder: (context, index) {
-                final student = sectionStudents[index];
-                final status = student["status"] as AttendanceStatus;
-                return _StudentCard(
-                  roll: student["roll"],
-                  name: student["name"],
-                  status: status,
-                  onStatusChanged: (newStatus) {
-                    // Find the original index in the full students list
-                    int originalIndex = students.indexWhere((s) => s["roll"] == student["roll"]);
-                    _markAttendance(originalIndex, newStatus);
-                  },
-                );
-              },
+        ),
+      ],
+      rows: students.map((student) {
+        return DataRow(
+          cells: [
+            DataCell(Text(student['id'])),
+            DataCell(Text(student['name'])),
+            ...datesList.map(
+                  (dateStr) => DataCell(
+                Center(
+                  child: Text(
+                    attendanceData[student['id']]![dateStr] ?? '-',
+                    style: TextStyle(
+                      color: (attendanceData[student['id']]![dateStr] == 'P')
+                          ? Colors.green
+                          : ((attendanceData[student['id']]![dateStr] == 'A')
+                          ? Colors.red
+                          : Colors.grey),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
             ),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Future<void> _exportToExcel() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final excel_lib.Excel excel = excel_lib.Excel.createExcel();
+      final excel_lib.Sheet sheet = excel['Attendance Report'];
+
+      // Add header
+      final headerCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0));
+      headerCell.value = excel_lib.TextCellValue('Attendance Report');
+
+      final courseCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1));
+      courseCell.value = excel_lib.TextCellValue('$selectedCourse - Section $selectedSection');
+
+      final periodCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2));
+      periodCell.value = excel_lib.TextCellValue('Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}');
+
+      // Add table headers
+      final rollHeaderCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 4));
+      rollHeaderCell.value = excel_lib.TextCellValue('Roll');
+
+      final nameHeaderCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 4));
+      nameHeaderCell.value = excel_lib.TextCellValue('Name');
+
+      // Add date headers
+      for (int i = 0; i < datesList.length; i++) {
+        final dateCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: i + 2, rowIndex: 4));
+        dateCell.value = excel_lib.TextCellValue(datesList[i]);
+      }
+
+      // Add student data
+      for (int i = 0; i < students.length; i++) {
+        final student = students[i];
+
+        final rollCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 5));
+        rollCell.value = excel_lib.TextCellValue(student['id']);
+
+        final nameCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 5));
+        nameCell.value = excel_lib.TextCellValue(student['name']);
+
+        for (int j = 0; j < datesList.length; j++) {
+          final dateStr = datesList[j];
+          final status = attendanceData[student['id']]![dateStr] ?? '-';
+
+          final statusCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: j + 2, rowIndex: i + 5));
+          statusCell.value = excel_lib.TextCellValue(status);
+        }
+      }
+
+      // Save the file
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = 'attendance_report_${DateFormat('yyyy_MM_dd').format(DateTime.now())}.xlsx';
+      final path = '${directory.path}/$fileName';
+
+      final fileBytes = excel.encode();
+      final file = File(path);
+      await file.writeAsBytes(fileBytes!);
+
+      await OpenFile.open(path);
+
+      setState(() {
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Excel file saved to $path")),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error exporting to Excel: $e")),
+      );
+    }
+  }
+
+  Future<void> _exportToPdf() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final pdf = pw.Document();
+
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4.landscape,
+          margin: const pw.EdgeInsets.all(32),
+          build: (pw.Context context) {
+            return [
+              pw.Header(
+                level: 0,
+                child: pw.Text('Attendance Report', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+              ),
+              pw.SizedBox(height: 8),
+              pw.Text('$selectedCourse - Section $selectedSection', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 4),
+              pw.Text('Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}',
+                  style: pw.TextStyle(fontSize: 12, color: PdfColors.grey)),
+              pw.SizedBox(height: 20),
+              _buildPdfTable(),
+            ];
+          },
+        ),
+      );
+
+      // Save the file
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = 'attendance_report_${DateFormat('yyyy_MM_dd').format(DateTime.now())}.pdf';
+      final path = '${directory.path}/$fileName';
+
+      final file = File(path);
+      await file.writeAsBytes(await pdf.save());
+
+      await OpenFile.open(path);
+
+      setState(() {
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("PDF file saved to $path")),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error exporting to PDF: $e")),
+      );
+    }
+  }
+
+  pw.Table _buildPdfTable() {
+    return pw.Table(
+      border: pw.TableBorder.all(color: PdfColors.grey300),
+      children: [
+        // Header row
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text('Roll', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text('Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
+            ...datesList.map(
+                  (dateStr) => pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(dateStr, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+        // Data rows
+        ...students.map(
+              (student) => pw.TableRow(
+            children: [
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(student['id']),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8),
+                child: pw.Text(student['name']),
+              ),
+              ...datesList.map(
+                    (dateStr) {
+                  final status = attendanceData[student['id']]![dateStr] ?? '-';
+                  return pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Center(
+                      child: pw.Text(
+                        status,
+                        style: pw.TextStyle(
+                          color: status == 'P'
+                              ? PdfColors.green
+                              : (status == 'A' ? PdfColors.red : PdfColors.grey),
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
-  }
-}
-
-class _StudentCard extends StatelessWidget {
-  final String roll;
-  final String name;
-  final AttendanceStatus status;
-  final Function(AttendanceStatus) onStatusChanged;
-
-  const _StudentCard({
-    required this.roll,
-    required this.name,
-    required this.status,
-    required this.onStatusChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        leading: Icon(
-          status.icon,
-          color: status.color,
-          size: 30,
-        ),
-        title: Text(
-          "$roll - $name",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          "Status: ${status.displayName}",
-          style: TextStyle(color: status.color, fontSize: 16),
-        ),
-        trailing: PopupMenuButton<AttendanceStatus>(
-          icon: Icon(Icons.more_vert),
-          onSelected: onStatusChanged,
-          itemBuilder: (BuildContext context) => AttendanceStatus.values.map((status) {
-            return PopupMenuItem(
-              value: status,
-              child: Text("Mark ${status.displayName}"),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-}
-
-enum AttendanceStatus {
-  Present,
-  Absent,
-  Late,
-  Pending,
-}
-
-extension AttendanceStatusExtension on AttendanceStatus {
-  String get displayName {
-    switch (this) {
-      case AttendanceStatus.Present:
-        return "Present";
-      case AttendanceStatus.Absent:
-        return "Absent";
-      case AttendanceStatus.Late:
-        return "Late";
-      case AttendanceStatus.Pending:
-        return "Pending";
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case AttendanceStatus.Present:
-        return Icons.check_circle;
-      case AttendanceStatus.Absent:
-        return Icons.cancel;
-      case AttendanceStatus.Late:
-        return Icons.access_time;
-      case AttendanceStatus.Pending:
-        return Icons.hourglass_empty;
-    }
-  }
-
-  Color get color {
-    switch (this) {
-      case AttendanceStatus.Present:
-        return Colors.green;
-      case AttendanceStatus.Absent:
-        return Colors.red;
-      case AttendanceStatus.Late:
-        return Colors.orange;
-      case AttendanceStatus.Pending:
-        return Colors.grey;
-    }
   }
 }
