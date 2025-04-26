@@ -1,28 +1,22 @@
 # SAMS - Student Attendance Management System
 
-**SAMS** is a mobile application designed for managing student attendance in educational institutions. It supports teachers' login and offers features for attendance tracking. Built with Flutter and Firebase, this system helps streamline attendance management. Initially I built it for my institution that is Rajshahi University of Engineering and Technology(RUET), specifcally for my department CSE-22 series. 
-
----
+**SAMS** is a mobile application designed for managing student attendance in educational institutions. It supports teachers' login and offers features for attendance tracking. Built with Flutter and Firebase, this system helps streamline attendance management. Initially built for Rajshahi University of Engineering and Technology (RUET), specifically for the CSE-22 series department.
 
 ## Features
 
 - **Teacher Role**: 
-  - Mark attendance for students.
-  - Track attendance statistics for courses.
-
+  - Mark attendance for students
+  - Track attendance statistics for courses
 - **Attendance summary charts**
-  
 - **CSV/PDF export of attendance data**
   
-- **Future Features**:
-  - Department Head Role.
-  - Course Advisor Role.
-  - Student Role.
-  - QR code-based attendance tracking.
-  - Face recognition attendance system.
-  - Open for all Department.
-
----
+### Future Features
+- Department Head Role
+- Course Advisor Role
+- Student Role
+- QR code-based attendance tracking
+- Face recognition attendance system
+- Open for all Departments
 
 ## Tech Stack
 
@@ -40,12 +34,9 @@
 - **flutter_test** — Testing framework
 - **flutter_lints** — Enforce code quality standards
 
----
-
 ## Getting Started
 
 ### Prerequisites
-
 - [Flutter](https://flutter.dev/docs/get-started/install)
 - Firebase account and project setup
 - Android Studio or Xcode for emulator/device testing
@@ -59,70 +50,70 @@ cd SAMS_Basic
 
 # Install dependencies
 flutter pub get
+```
 
 ### Configure Firebase
 
 To connect the app to your Firebase project:
 
-1. Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
-2. Add an **Android** app and/or an **iOS** app in your project settings.
-3. Download the `google-services.json` file and place it inside the `android/app/` directory.
-4. Download the `GoogleService-Info.plist` file and place it inside the `ios/Runner/` directory.
-5. Make sure to enable required Firebase services like **Authentication** and **Firestore Database**.
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project
+2. Add an **Android** app and/or an **iOS** app in your project settings
+3. Download the `google-services.json` file and place it inside the `android/app/` directory
+4. Download the `GoogleService-Info.plist` file and place it inside the `ios/Runner/` directory
+5. Make sure to enable required Firebase services like **Authentication** and **Firestore Database**
 
-> For detailed setup instructions, refer to the official [FlutterFire documentation](https://firebase.flutter.dev/docs/overview).
+> For detailed setup instructions, refer to the official [FlutterFire documentation](https://firebase.flutter.dev/docs/overview)
 
-###  Run the App
+### Run the App
 
 Once everything is set up, start the app on your connected device or emulator:
 
 ```bash
 flutter run
-
+```
 
 ### Troubleshooting
 
-- Ensure your Flutter SDK version matches the project requirement (**`sdk: ^3.7.0`**).
+- Ensure your Flutter SDK version matches the project requirement (**`sdk: ^3.7.0`**)
 - If you encounter Firebase-related build errors:
-  - Verify that `google-services.json` is correctly placed inside `android/app/`.
-  - Verify that `GoogleService-Info.plist` is correctly placed inside `ios/Runner/`.
+  - Verify that `google-services.json` is correctly placed inside `android/app/`
+  - Verify that `GoogleService-Info.plist` is correctly placed inside `ios/Runner/`
 - Run the following command to check if your development environment is properly set up:
 
 ```bash
 flutter doctor
+```
 
-
-### Contributing
+## Contributing
 
 If you'd like to contribute:
 
-1. **Fork** the repository.
+1. **Fork** the repository
 2. **Create a new branch**:
-    ```bash
-    git checkout -b feature-branch
-3. **Commit** your changes
-    ```bash
-    git commit -m "Add: new feature"
-4. **Push** to your branch
-    ```bash
-    git push origin feature-branch
+   ```bash
+   git checkout -b feature-branch
+   ```
+3. **Commit** your changes:
+   ```bash
+   git commit -m "Add: new feature"
+   ```
+4. **Push** to your branch:
+   ```bash
+   git push origin feature-branch
+   ```
+5. Create a **Pull Request**
 
-### 📄 License
+## License
 
 This project is licensed under the **MIT License**.  
 See the [LICENSE](LICENSE) file for more details.
 
----
+## Acknowledgments
 
-### Acknowledgments
+- Thanks to **Flutter** for the awesome UI framework
+- Thanks to **Firebase** for providing scalable backend services
 
-- Thanks to **Flutter** for the awesome UI framework.
-- Thanks to **Firebase** for providing scalable backend services.
-
----
-
-### 📬 Contact
+## Contact
 
 **Author**: [Sheikh Siam Najat](https://www.linkedin.com/in/sheikhsiamnajat/)  
 **Email**: [siamnajat02@gmail.com](mailto:siamnajat02@gmail.com)
-
