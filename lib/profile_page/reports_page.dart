@@ -361,11 +361,14 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       return;
     }
 
-    setState(() {
-      isLoading = true;
-      attendanceData.clear();
-      datesList.clear();
-    });
+    // Use a local variable to track loading state
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+        attendanceData.clear();
+        datesList.clear();
+      });
+    }
 
     try {
       // Generate list of dates between start and end date
@@ -413,20 +416,56 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
         }
       }
 
-      setState(() {
-        isLoading = false;
-      });
+      // Check if widget is still mounted before updating state
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error generating report: $e")),
-      );
+      // Check if widget is still mounted before updating state
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error generating report: $e")),
+        );
+      }
     }
   }
 
+  // Method to calculate attendance percentages
+  Map<String, double> _calculateAttendancePercentages() {
+    Map<String, double> percentages = {};
+
+    for (var student in students) {
+      String studentId = student['id'] ?? '';
+      if (studentId.isEmpty) continue;
+
+      int presentCount = 0;
+      int totalSessions = 0;
+
+      for (var dateStr in datesList) {
+        String status = attendanceData[studentId]?[dateStr] ?? '-';
+        if (status == 'P' || status == 'A') {
+          totalSessions++;
+          if (status == 'P') {
+            presentCount++;
+          }
+        }
+      }
+
+      double percentage = totalSessions > 0 ? (presentCount / totalSessions) * 100 : 0.0;
+      percentages[studentId] = percentage;
+    }
+
+    return percentages;
+  }
+
   Widget _buildAttendanceTable() {
+    final percentages = _calculateAttendancePercentages();
+
     return DataTable(
       columnSpacing: 12,
       headingRowColor: MaterialStateProperty.all(Colors.blueGrey[100]),
@@ -455,26 +494,47 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
             ),
           ),
         ),
+        const DataColumn(
+          label: Text(
+            'Attendance %',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
       rows: students.map((student) {
+        final studentId = student['id'] ?? '';
+        final percentage = percentages[studentId] ?? 0.0;
         return DataRow(
           cells: [
-            DataCell(Text(student['id'])),
-            DataCell(Text(student['name'])),
+            DataCell(Text(studentId)),
+            DataCell(Text(student['name'] ?? 'Unknown')),
             ...datesList.map(
-                  (dateStr) => DataCell(
-                Center(
-                  child: Text(
-                    attendanceData[student['id']]![dateStr] ?? '-',
-                    style: TextStyle(
-                      color: (attendanceData[student['id']]![dateStr] == 'P')
-                          ? Colors.green
-                          : ((attendanceData[student['id']]![dateStr] == 'A')
-                          ? Colors.red
-                          : Colors.grey),
-                      fontWeight: FontWeight.bold,
+                  (dateStr) {
+                // Check if the studentId exists in attendanceData and if dateStr exists in the nested map
+                final status = attendanceData[studentId]?[dateStr] ?? '-';
+                return DataCell(
+                  Center(
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        color: (status == 'P')
+                            ? Colors.green
+                            : ((status == 'A')
+                            ? Colors.red
+                            : Colors.grey),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
+                );
+              },
+            ),
+            DataCell(
+              Text(
+                '${percentage.toStringAsFixed(1)}%',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: percentage >= 75 ? Colors.green : Colors.red,
                 ),
               ),
             ),
@@ -486,12 +546,15 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
 
   Future<void> _exportToExcel() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = true;
+        });
+      }
 
       final excel_lib.Excel excel = excel_lib.Excel.createExcel();
       final excel_lib.Sheet sheet = excel['Attendance Report'];
+      final percentages = _calculateAttendancePercentages();
 
       // Add header
       final headerCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0));
@@ -516,6 +579,10 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
         dateCell.value = excel_lib.TextCellValue(datesList[i]);
       }
 
+      // Add percentage header
+      final percentHeaderCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: datesList.length + 2, rowIndex: 4));
+      percentHeaderCell.value = excel_lib.TextCellValue('Attendance %');
+
       // Add student data
       for (int i = 0; i < students.length; i++) {
         final student = students[i];
@@ -533,6 +600,11 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
           final statusCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: j + 2, rowIndex: i + 5));
           statusCell.value = excel_lib.TextCellValue(status);
         }
+
+        // Add percentage value
+        final percentCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: datesList.length + 2, rowIndex: i + 5));
+        final percentage = percentages[student['id']] ?? 0.0;
+        percentCell.value = excel_lib.TextCellValue('${percentage.toStringAsFixed(1)}%');
       }
 
       // Save the file
@@ -546,28 +618,33 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
 
       await OpenFile.open(path);
 
-      setState(() {
-        isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Excel file saved to $path")),
-      );
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Excel file saved to $path")),
+        );
+      }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error exporting to Excel: $e")),
-      );
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error exporting to Excel: $e")),
+        );
+      }
     }
   }
 
   Future<void> _exportToPdf() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = true;
+        });
+      }
 
       final pdf = pw.Document();
 
@@ -603,24 +680,29 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
 
       await OpenFile.open(path);
 
-      setState(() {
-        isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("PDF file saved to $path")),
-      );
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Pdf file saved to $path")),
+        );
+      }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error exporting to PDF: $e")),
-      );
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error exporting to Pdf: $e")),
+        );
+      }
     }
   }
 
   pw.Table _buildPdfTable() {
+    final percentages = _calculateAttendancePercentages();
+
     return pw.Table(
       border: pw.TableBorder.all(color: PdfColors.grey300),
       children: [
@@ -642,42 +724,58 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                 child: pw.Text(dateStr, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
               ),
             ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8),
+              child: pw.Text('Attendance %', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
           ],
         ),
         // Data rows
         ...students.map(
-              (student) => pw.TableRow(
-            children: [
-              pw.Padding(
-                padding: const pw.EdgeInsets.all(8),
-                child: pw.Text(student['id']),
-              ),
-              pw.Padding(
-                padding: const pw.EdgeInsets.all(8),
-                child: pw.Text(student['name']),
-              ),
-              ...datesList.map(
-                    (dateStr) {
-                  final status = attendanceData[student['id']]![dateStr] ?? '-';
-                  return pw.Padding(
+                (student) {
+              final percentage = percentages[student['id']] ?? 0.0;
+              return pw.TableRow(
+                children: [
+                  pw.Padding(
                     padding: const pw.EdgeInsets.all(8),
-                    child: pw.Center(
-                      child: pw.Text(
-                        status,
-                        style: pw.TextStyle(
-                          color: status == 'P'
-                              ? PdfColors.green
-                              : (status == 'A' ? PdfColors.red : PdfColors.grey),
-                          fontWeight: pw.FontWeight.bold,
+                    child: pw.Text(student['id']),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(student['name']),
+                  ),
+                  ...datesList.map(
+                        (dateStr) {
+                      final status = attendanceData[student['id']]![dateStr] ?? '-';
+                      return pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Center(
+                          child: pw.Text(
+                            status,
+                            style: pw.TextStyle(
+                              color: status == 'P'
+                                  ? PdfColors.green
+                                  : (status == 'A' ? PdfColors.red : PdfColors.grey),
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
                         ),
+                      );
+                    },
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(
+                      '${percentage.toStringAsFixed(1)}%',
+                      style: pw.TextStyle(
+                        color: percentage >= 75 ? PdfColors.green : PdfColors.red,
+                        fontWeight: pw.FontWeight.bold,
                       ),
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
+                  ),
+                ],
+              );
+            }),
       ],
     );
   }

@@ -45,7 +45,7 @@ class _AttendancePageState extends State<AttendancePage> {
           // Add a button to access previous sessions
           if (!isEditingPreviousSession)
             IconButton(
-              icon: Icon(Icons.history),
+              icon: Icon(Icons.manage_history_sharp),
               onPressed: _showPreviousSessionsDialog,
               tooltip: "Previous Sessions",
             ),
@@ -161,42 +161,46 @@ class _AttendancePageState extends State<AttendancePage> {
               // Session Info
               if (currentSessionId != null)
                 Card(
-                  margin: const EdgeInsets.only(bottom: 16),
+                  margin: const EdgeInsets.only(bottom: 15, left: 5, right: 5),
                   child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isEditingPreviousSession
-                              ? "Editing Attendance - ${DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)}"
-                              : "Attendance Session - ${DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)}",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                    padding: const EdgeInsets.all(5),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isEditingPreviousSession
+                                ? "Editing Attendance - ${DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)}"
+                                : "Attendance Session - ${DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)}",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8.0,
-                          children: [
-                            Text(
-                              "$selectedCourse - Section $selectedSection",
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            ElevatedButton(
-                              onPressed: _markAllPresent,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8.0,
+                            children: [
+                              Text(
+                                "$selectedCourse - Section $selectedSection",
+                                style: const TextStyle(fontSize: 16),
                               ),
-                              child: const Text("Mark All Present"),
-                            ),
-                          ],
-                        ),
-                      ],
+                              ElevatedButton(
+                                onPressed: _markAllPresent,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                ),
+                                child: const Text("Mark All Present"),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
+
 
               // Student List
               if (isLoading)
@@ -233,10 +237,10 @@ class _AttendancePageState extends State<AttendancePage> {
               // Session Controls
               if (students.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(top: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
                   child: Wrap(
                     alignment: WrapAlignment.spaceEvenly,
-                    spacing: 16.0,
+                    spacing: 20.0,
                     children: [
                       if (!isEditingPreviousSession)
                         ElevatedButton(
@@ -625,7 +629,6 @@ class _AttendancePageState extends State<AttendancePage> {
     }
   }
 
-  // NEW METHODS FOR EDITING PREVIOUS SESSIONS
 
   // Method to fetch and show previous completed sessions
   Future<void> _showPreviousSessionsDialog() async {
