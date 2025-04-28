@@ -20,20 +20,17 @@
 
 ## Screenshots
 
-<table>
-<tr>
-<td><img src="screenshots/login.png" width="300"/></td>
-<td><img src="screenshots/signup.png" width="300"/></td>
-</tr>
-<tr>
-<td><img src="screenshots/forgot_password.png" width="300"/></td>
-<td><img src="screenshots/dashboard.png" width="300"/></td>
-</tr>
-<tr>
-<td><img src="screenshots/attendance.png" width="300"/></td>
-<td><img src="screenshots/reports.png" width="300"/></td>
-</tr>
-</table>
+| Login Page | Signup Page |
+|:----------:|:-----------:|
+| ![Login](screenshots/login.png) | ![Signup](screenshots/signup.png) |
+
+| Forgot Password | Dashboard |
+|:---------------:|:---------:|
+| ![Forgot Password](screenshots/forgot_password.png) | ![Dashboard](screenshots/dashboard.png) |
+
+| Attendance Page | Reports Page |
+|:---------------:|:------------:|
+| ![Attendance](screenshots/attendance.png) | ![Reports](screenshots/reports.png) |
 
 ## Tech Stack
 
