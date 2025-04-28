@@ -14,8 +14,6 @@
 - Department Head Role
 - Course Advisor Role
 - Student Role
-- QR code-based attendance tracking
-- Face recognition attendance system
 - Open for all Departments
 
 ## Screenshots
