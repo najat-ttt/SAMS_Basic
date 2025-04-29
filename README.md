@@ -1,5 +1,11 @@
 # SAMS - Student Attendance Management System
 
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+
+SAMS is a cross-platform mobile application built using **Flutter** and **Firebase**, designed to help teachers manage student attendance efficiently. Initially developed for the **CSE-22 Series** at **Rajshahi University of Engineering and Technology (RUET)**, this app aims to streamline academic attendance management through a simple and scalable system.
+
+---
+
 **SAMS** is a mobile application designed for managing student attendance in educational institutions. It supports teachers' login and offers features for attendance tracking. Built with Flutter and Firebase, this system helps streamline attendance management. Initially built for Rajshahi University of Engineering and Technology (RUET), specifically for the CSE-22 series department.
 
 ## Features
