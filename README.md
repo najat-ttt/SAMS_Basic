@@ -133,5 +133,6 @@ See the [LICENSE](LICENSE) file for more details.
 
 ## Contact
 
-**Author**: [Sheikh Siam Najat](https://www.linkedin.com/in/sheikhsiamnajat/)  
+**[Sheikh Siam Najat](https://www.linkedin.com/in/sheikhsiamnajat/)** 
+🎓**CSE @ RUET**
 **Email**: [siamnajat02@gmail.com](mailto:siamnajat02@gmail.com)
