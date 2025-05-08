@@ -1,5 +1,11 @@
 # SAMS - Student Attendance Management System
 
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+
+SAMS is a cross-platform mobile application built using **Flutter** and **Firebase**, designed to help teachers manage student attendance efficiently. Initially developed for the **CSE-22 Series** at **Rajshahi University of Engineering and Technology (RUET)**, this app aims to streamline academic attendance management through a simple and scalable system.
+
+---
+
 **SAMS** is a mobile application designed for managing student attendance in educational institutions. It supports teachers' login and offers features for attendance tracking. Built with Flutter and Firebase, this system helps streamline attendance management. Initially built for Rajshahi University of Engineering and Technology (RUET), specifically for the CSE-22 series department.
 
 ## Features
@@ -14,9 +20,21 @@
 - Department Head Role
 - Course Advisor Role
 - Student Role
-- QR code-based attendance tracking
-- Face recognition attendance system
 - Open for all Departments
+
+## Screenshots
+
+| Login Page | Signup Page |
+|:----------:|:-----------:|
+| ![Login](screenshots/login.png) | ![Signup](screenshots/signup.png) |
+
+| Forgot Password | Dashboard |
+|:---------------:|:---------:|
+| ![Forgot Password](screenshots/forgot_password.png) | ![Dashboard](screenshots/dashboard.png) |
+
+| Attendance Page | Reports Page |
+|:---------------:|:------------:|
+| ![Attendance](screenshots/attendance.png) | ![Reports](screenshots/reports.png) |
 
 ## Tech Stack
 
@@ -115,5 +133,8 @@ See the [LICENSE](LICENSE) file for more details.
 
 ## Contact
 
-**Author**: [Sheikh Siam Najat](https://www.linkedin.com/in/sheikhsiamnajat/)  
+**[Sheikh Siam Najat](https://www.linkedin.com/in/sheikhsiamnajat/)** 
+
+🎓 **[CSE @ RUET](https://www.cse.ruet.ac.bd/)**
+
 **Email**: [siamnajat02@gmail.com](mailto:siamnajat02@gmail.com)
