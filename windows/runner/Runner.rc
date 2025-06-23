@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "untitled" "\0"
+            VALUE "CompanyName", "Najat" "\0"
+            VALUE "FileDescription", "SAMS - Student Attendance Management System" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "untitled" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
+            VALUE "InternalName", "SAMS" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 Najat. All rights reserved." "\0"
             VALUE "OriginalFilename", "untitled.exe" "\0"
-            VALUE "ProductName", "untitled" "\0"
+            VALUE "ProductName", "SAMS" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

@@ -2,20 +2,51 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform;
 import 'login_page/login_page.dart';
 import 'profile_page/dashboard_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyAZk-0O762ba30uaKg4Z8mKVD10cV0okoM",
-      appId: "1:241623526441:android:af145909d6302fb64f8038",
-      messagingSenderId: "241623526441",
-      projectId: "sams8-3-2025",
-      storageBucket: "sams8-3-2025.firebasestorage.app",
-    ),
-  );
+
+  // Platform specific Firebase initialization
+  if (kIsWeb) {
+    // Web-specific Firebase configuration
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyAZk-0O762ba30uaKg4Z8mKVD10cV0okoM",
+        appId: "1:241623526441:web:af145909d6302fb64f8038",
+        messagingSenderId: "241623526441",
+        projectId: "sams8-3-2025",
+        storageBucket: "sams8-3-2025.firebasestorage.app",
+        authDomain: "sams8-3-2025.firebaseapp.com",
+      ),
+    );
+  } else if (Platform.isWindows) {
+    // Windows-specific Firebase configuration
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyAZk-0O762ba30uaKg4Z8mKVD10cV0okoM",
+        appId: "1:241623526441:windows:af145909d6302fb64f8038",
+        messagingSenderId: "241623526441",
+        projectId: "sams8-3-2025",
+        storageBucket: "sams8-3-2025.firebasestorage.app",
+      ),
+    );
+  } else {
+    // Default (Android/iOS) Firebase configuration
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyAZk-0O762ba30uaKg4Z8mKVD10cV0okoM",
+        appId: "1:241623526441:android:af145909d6302fb64f8038",
+        messagingSenderId: "241623526441",
+        projectId: "sams8-3-2025",
+        storageBucket: "sams8-3-2025.firebasestorage.app",
+      ),
+    );
+  }
+
   runApp(const MyApp());
 }
 

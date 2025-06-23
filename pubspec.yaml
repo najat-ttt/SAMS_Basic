@@ -29,6 +29,7 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.14.3
   flutter_lints: ^5.0.0
+  dart_code_metrics: ^5.0.0
 
 flutter:
   uses-material-design: true
@@ -39,5 +40,10 @@ flutter_icons:
   android: true
   ios: true
   image_path: "assets/icon.png"
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/icon.png"
+  windows:
+    generate: true
+    icon_size: 48 # min: 48, max: 256, default: 48
+  web:
+    generate: true
+    background_color: "#FFFFFF"
+    theme_color: "#FFFFFF"

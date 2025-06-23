@@ -32,6 +32,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   }
   window.SetQuitOnClose(true);
 
+  // Set the window icon for the taskbar explicitly
+  HICON icon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(101));
+  HWND hwnd = window.GetHandle();
+  if (hwnd && icon) {
+    SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
+    SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+  }
+
   ::MSG msg;
   while (::GetMessage(&msg, nullptr, 0, 0)) {
     ::TranslateMessage(&msg);
