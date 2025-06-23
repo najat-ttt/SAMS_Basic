@@ -2,7 +2,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
-SAMS is a cross-platform mobile application built using **Flutter** and **Firebase**, designed to help teachers manage student attendance efficiently. Initially developed for the **CSE-22 Series** at **Rajshahi University of Engineering and Technology (RUET)**, this app aims to streamline academic attendance management through a simple and scalable system.
+SAMS is a cross-platform mobile application built using **Flutter** and **Firebase**, designed to help teachers manage student attendance efficiently. Initially developed for the **CSE-22 Series** at **Rajshahi University of Engineering and Technology (RUET)** under the guidance of **[Prof. Dr. Boshir Ahmed](https://www.cse.ruet.ac.bd/boshir)**, this app aims to streamline academic attendance management through a simple and scalable system.
 
 ---
 
@@ -130,6 +130,7 @@ See the [LICENSE](LICENSE) file for more details.
 
 - Thanks to **Flutter** for the awesome UI framework
 - Thanks to **Firebase** for providing scalable backend services
+- Special thanks to **[Prof. Dr. Boshir Ahmed](https://www.cse.ruet.ac.bd/boshir)** sir for guidance and supervision
 
 ## Contact
 
