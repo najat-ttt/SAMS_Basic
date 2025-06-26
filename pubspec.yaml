@@ -23,7 +23,7 @@ dependencies:
   open_file: ^3.5.10
   path_provider: ^2.1.5
   shared_preferences: ^2.5.3
-  appwrite: ^15.0.2
+  flutter_web_auth_2: ^4.1.0
 
 dev_dependencies:
   flutter_test:

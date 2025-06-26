@@ -10,7 +10,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
-import 'dart:html' as html;
+import 'web_file_saver.dart'
+    if (dart.library.io) 'web_file_saver_stub.dart';
 
 class AttendanceReportPage extends StatefulWidget {
   const AttendanceReportPage({super.key});
@@ -675,16 +676,11 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
 
       // Save the file
       final fileName = 'attendance_report_${DateFormat('yyyy_MM_dd').format(DateTime.now())}.xlsx';
-      final fileBytes = excel.encode();
+      final fileBytes = excel.save();
       if (kIsWeb) {
-        // Web: trigger download using AnchorElement
-        final content = Uint8List.fromList(fileBytes!);
-        final blob = html.Blob([content]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', fileName)
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        // Convert List<int> to Uint8List for web
+        final bytes = Uint8List.fromList(fileBytes!);
+        await saveFileWeb(bytes, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         if (mounted) {
           setState(() { isLoading = false; });
           ScaffoldMessenger.of(context).showSnackBar(
@@ -758,14 +754,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       final fileName = 'attendance_report_${DateFormat('yyyy_MM_dd').format(DateTime.now())}.pdf';
       final pdfBytes = await pdf.save();
       if (kIsWeb) {
-        // Web: trigger download using AnchorElement
-        final content = Uint8List.fromList(pdfBytes);
-        final blob = html.Blob([content]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', fileName)
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        await saveFileWeb(pdfBytes, fileName, 'application/pdf');
         if (mounted) {
           setState(() { isLoading = false; });
           ScaffoldMessenger.of(context).showSnackBar(
