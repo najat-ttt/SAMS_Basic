@@ -1,6 +1,6 @@
 #define MyAppName "SAMS"
 #define MyAppVersion "1.0.0"
-#define MyAppPublisher "Najat"
+#define MyAppPublisher "Najat@CSE_RUET"
 #define MyAppURL "https://github.com/najat-ttt"
 #define MyAppExeName "untitled.exe"
 

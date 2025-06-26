@@ -97,7 +97,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                                     ),
                                     contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                   ),
-                                  style: TextStyle(fontSize: dropdownFontSize),
+                                  style: TextStyle(fontSize: dropdownFontSize, color: Colors.black),
                                   items: courses.map((course) {
                                     return DropdownMenuItem(
                                       value: course,
@@ -124,7 +124,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                                     ),
                                     contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                   ),
-                                  style: TextStyle(fontSize: dropdownFontSize),
+                                  style: TextStyle(fontSize: dropdownFontSize, color: Colors.black),
                                   items: sections.map((section) {
                                     return DropdownMenuItem(
                                       value: section,
