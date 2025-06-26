@@ -37,6 +37,15 @@ class _AttendancePageState extends State<AttendancePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 800;
+    final double cardPadding = isSmallScreen ? 12 : 24;
+    final double cardFontSize = isSmallScreen ? 15 : 18;
+    final double buttonFontSize = isSmallScreen ? 15 : 17;
+    final double buttonHeight = isSmallScreen ? 44 : 48;
+    final double maxContentWidth = isSmallScreen ? double.infinity : 700;
+    final double dropdownFontSize = isSmallScreen ? 15 : 17;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditingPreviousSession ? "Edit Previous Attendance" : "Attendance System"),
@@ -66,132 +75,98 @@ class _AttendancePageState extends State<AttendancePage> {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Course, Section Selection and Date Picker Row
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Date Selection
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_today, color: Colors.blueGrey),
-                          const SizedBox(width: 5),
-                          Text(
-                            "Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          TextButton(
-                            onPressed: isEditingPreviousSession ? null : () => _selectDate(context),
-                            child: const Text("Change Date"),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-
-                      // Course and Section Selection
-                      Row(
-                        children: [
-                          // Course Dropdown
-                          Expanded(
-                            flex: 3,
-                            child: DropdownButtonFormField<String>(
-                              value: selectedCourse,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: "Select Course",
-                                border: OutlineInputBorder(),
-                              ),
-                              items: courses.map((course) {
-                                return DropdownMenuItem(
-                                  value: course,
-                                  child: Text(course, overflow: TextOverflow.ellipsis),
-                                );
-                              }).toList(),
-                              onChanged: isEditingPreviousSession ? null : (value) {
-                                setState(() {
-                                  selectedCourse = value;
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Section Dropdown
-                          Expanded(
-                            flex: 2,
-                            child: DropdownButtonFormField<String>(
-                              value: selectedSection,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: "Select Section",
-                                border: OutlineInputBorder(),
-                              ),
-                              items: sections.map((section) {
-                                return DropdownMenuItem(
-                                  value: section,
-                                  child: Text("$section"),
-                                );
-                              }).toList(),
-                              onChanged: isEditingPreviousSession ? null : (value) {
-                                setState(() {
-                                  selectedSection = value;
-                                  _fetchStudents();
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Session Info
-              if (currentSessionId != null)
-                Card(
-                  margin: const EdgeInsets.only(bottom: 15, left: 5, right: 5),
-                  child: Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Align(
-                      alignment: Alignment.center,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxContentWidth),
+            child: Padding(
+              padding: EdgeInsets.all(cardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Course, Section Selection and Date Picker Row
+                  Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: EdgeInsets.all(cardPadding),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            isEditingPreviousSession
-                                ? "Editing Attendance - ${DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)}"
-                                : "Attendance Session - ${DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)}",
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8.0,
+                          // Date Selection
+                          Row(
                             children: [
+                              Icon(Icons.calendar_today, color: Colors.blueGrey),
+                              const SizedBox(width: 5),
                               Text(
-                                "$selectedCourse - Section $selectedSection",
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              ElevatedButton(
-                                onPressed: _markAllPresent,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
+                                "Date: "+DateFormat('yyyy-MM-dd').format(selectedDate),
+                                style: TextStyle(
+                                  fontSize: cardFontSize,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                child: const Text("Mark All Present"),
+                              ),
+                              const Spacer(),
+                              TextButton(
+                                onPressed: isEditingPreviousSession ? null : () => _selectDate(context),
+                                child: const Text("Change Date"),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          // Course and Section Selection
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: DropdownButtonFormField<String>(
+                                  value: selectedCourse,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    labelText: "Select Course",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  ),
+                                  style: TextStyle(fontSize: dropdownFontSize),
+                                  items: courses.map((course) {
+                                    return DropdownMenuItem(
+                                      value: course,
+                                      child: Text(course, overflow: TextOverflow.ellipsis),
+                                    );
+                                  }).toList(),
+                                  onChanged: isEditingPreviousSession ? null : (value) {
+                                    setState(() {
+                                      selectedCourse = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                flex: 2,
+                                child: DropdownButtonFormField<String>(
+                                  value: selectedSection,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    labelText: "Select Section",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  ),
+                                  style: TextStyle(fontSize: dropdownFontSize),
+                                  items: sections.map((section) {
+                                    return DropdownMenuItem(
+                                      value: section,
+                                      child: Text("$section"),
+                                    );
+                                  }).toList(),
+                                  onChanged: isEditingPreviousSession ? null : (value) {
+                                    setState(() {
+                                      selectedSection = value;
+                                      _fetchStudents();
+                                    });
+                                  },
+                                ),
                               ),
                             ],
                           ),
@@ -199,81 +174,131 @@ class _AttendancePageState extends State<AttendancePage> {
                       ),
                     ),
                   ),
-                ),
-
-
-              // Student List
-              if (isLoading)
-                const Expanded(
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              else if (selectedCourse != null && selectedSection != null)
-                Expanded(
-                  child: students.isEmpty
-                      ? const Center(
-                    child: Text(
-                      "No students found in this section",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                  const SizedBox(height: 12),
+                  // Session Info
+                  if (currentSessionId != null)
+                    Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      margin: const EdgeInsets.only(bottom: 15, left: 5, right: 5),
+                      child: Padding(
+                        padding: EdgeInsets.all(cardPadding),
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isEditingPreviousSession
+                                    ? "Editing Attendance - "+DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)
+                                    : "Attendance Session - "+DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate),
+                                style: TextStyle(
+                                  fontSize: cardFontSize + 2,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8.0,
+                                children: [
+                                  Text(
+                                    "$selectedCourse - Section $selectedSection",
+                                    style: TextStyle(fontSize: cardFontSize),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: _markAllPresent,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                    ),
+                                    child: const Text("Mark All Present"),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  )
-                      : ListView.builder(
-                    itemCount: students.length,
-                    itemBuilder: (context, index) {
-                      final student = students[index];
-                      return _buildStudentCard(student, index);
-                    },
-                  ),
-                )
-              else
-                const Expanded(
-                  child: Center(
-                    child: Text(
-                      "Please select a course and section to begin",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                  // Student List
+                  if (isLoading)
+                    const Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (selectedCourse != null && selectedSection != null)
+                    Expanded(
+                      child: students.isEmpty
+                          ? const Center(
+                        child: Text(
+                          "No students found in this section",
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                          : ListView.builder(
+                        itemCount: students.length,
+                        itemBuilder: (context, index) {
+                          final student = students[index];
+                          return _buildStudentCard(student, index, cardFontSize, buttonFontSize, isSmallScreen);
+                        },
+                      ),
+                    )
+                  else
+                    const Expanded(
+                      child: Center(
+                        child: Text(
+                          "Please select a course and section to begin",
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-
-              // Session Controls
-              if (students.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-                  child: Wrap(
-                    alignment: WrapAlignment.spaceEvenly,
-                    spacing: 20.0,
-                    children: [
-                      if (!isEditingPreviousSession)
-                        ElevatedButton(
-                          onPressed: currentSessionId == null ? _startNewSession : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            minimumSize: const Size(150, 50),
-                          ),
-                          child: const Text("New Session"),
-                        ),
-                      if (currentSessionId != null && !isEditingPreviousSession)
-                        ElevatedButton(
-                          onPressed: _endCurrentSession,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            minimumSize: const Size(150, 50),
-                          ),
-                          child: const Text("End Session"),
-                        ),
-                      // Save changes button for editing mode
-                      if (isEditingPreviousSession)
-                        ElevatedButton(
-                          onPressed: _saveEditedAttendance,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            minimumSize: const Size(150, 50),
-                          ),
-                          child: const Text("Save Changes"),
-                        ),
-                    ],
-                  ),
-                ),
-            ],
+                  // Session Controls
+                  if (students.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 20.0,
+                        children: [
+                          if (!isEditingPreviousSession)
+                            SizedBox(
+                              height: buttonHeight + 8,
+                              child: ElevatedButton(
+                                onPressed: currentSessionId == null ? _startNewSession : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  minimumSize: Size(150, buttonHeight),
+                                ),
+                                child: Text("New Session", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          if (currentSessionId != null && !isEditingPreviousSession)
+                            SizedBox(
+                              height: buttonHeight + 8,
+                              child: ElevatedButton(
+                                onPressed: _endCurrentSession,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  minimumSize: Size(150, buttonHeight),
+                                ),
+                                child: Text("End Session", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          if (isEditingPreviousSession)
+                            SizedBox(
+                              height: buttonHeight + 8,
+                              child: ElevatedButton(
+                                onPressed: _saveEditedAttendance,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  minimumSize: Size(150, buttonHeight),
+                                ),
+                                child: Text("Save Changes", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -295,18 +320,20 @@ class _AttendancePageState extends State<AttendancePage> {
     }
   }
 
-  Widget _buildStudentCard(Map<String, dynamic> student, int index) {
+  Widget _buildStudentCard(Map<String, dynamic> student, int index, double cardFontSize, double buttonFontSize, bool isSmallScreen) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: EdgeInsets.symmetric(vertical: isSmallScreen ? 3 : 7, horizontal: isSmallScreen ? 0 : 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(isSmallScreen ? 10 : 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               "${student['id']}: ${student['name']}",
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: cardFontSize,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -316,10 +343,10 @@ class _AttendancePageState extends State<AttendancePage> {
               children: [
                 _buildStatusButton("Present", student['status'] == "Present", () {
                   _markAttendance(index, "Present");
-                }),
+                }, buttonFontSize, isSmallScreen),
                 _buildStatusButton("Absent", student['status'] == "Absent", () {
                   _markAttendance(index, "Absent");
-                }),
+                }, buttonFontSize, isSmallScreen),
               ],
             ),
           ],
@@ -328,7 +355,7 @@ class _AttendancePageState extends State<AttendancePage> {
     );
   }
 
-  Widget _buildStatusButton(String label, bool isSelected, VoidCallback onPressed) {
+  Widget _buildStatusButton(String label, bool isSelected, VoidCallback onPressed, double buttonFontSize, bool isSmallScreen) {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
@@ -336,6 +363,10 @@ class _AttendancePageState extends State<AttendancePage> {
             ? (label == "Present" ? Colors.green : Colors.red)
             : Colors.grey[300],
         foregroundColor: isSelected ? Colors.white : Colors.black,
+        minimumSize: Size(isSmallScreen ? 80 : 100, isSmallScreen ? 36 : 40),
+        textStyle: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: isSelected ? 4 : 1,
       ),
       child: Text(label),
     );
@@ -824,3 +855,4 @@ class _AttendancePageState extends State<AttendancePage> {
     }
   }
 }
+

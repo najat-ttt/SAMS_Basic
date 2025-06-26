@@ -21,30 +21,33 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20),
-              Text(
-                "Forgot Your Password?",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF36455F),
+          padding: const EdgeInsets.symmetric(horizontal: 50.0),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: 60),
+                Text(
+                  "Forgot Your Password?",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.cyan[900],
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                "Enter your email address below",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.blueGrey,
+                SizedBox(height: 10),
+                Text(
+                  "Enter your email address below",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.blueGrey,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              SizedBox(height: 30),
-              Center(
-                child: Material(
+                SizedBox(height: 40),
+                Material(
                   elevation: 0.5,
                   borderRadius: BorderRadius.circular(12.0),
                   child: SizedBox(
@@ -63,35 +66,32 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide.none,
                         ),
                       ),
                       keyboardType: TextInputType.emailAddress,
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 30),
-              Center(
-                child: _isLoading
+                SizedBox(height: 30),
+                _isLoading
                     ? CircularProgressIndicator()
                     : ElevatedButton(
-                  onPressed: _sendPasswordResetEmail,
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: Size(140, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    backgroundColor: Color(0xFF1A6075),
-                  ),
-                  child: Text(
-                    "Send Email",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              Center(
-                child: TextButton(
+                        onPressed: _sendPasswordResetEmail,
+                        style: ElevatedButton.styleFrom(
+                          fixedSize: Size(150, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          backgroundColor: Color(0xFF1A6075),
+                        ),
+                        child: Text(
+                          "Send Email",
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                      ),
+                SizedBox(height: 20),
+                TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -103,8 +103,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

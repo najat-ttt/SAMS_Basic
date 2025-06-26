@@ -60,7 +60,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void _editProfile(BuildContext context) {
     TextEditingController nameController = TextEditingController(text: _name);
     TextEditingController emailController = TextEditingController(text: _email);
-    TextEditingController passwordController = TextEditingController(text: _password);
 
     showDialog(
       context: context,
@@ -73,8 +72,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 _buildTextField("Full Name", nameController),
                 SizedBox(height: 10),
                 _buildTextField("Email", emailController),
-                SizedBox(height: 10),
-                _buildTextField("Password", passwordController, obscureText: true),
               ],
             ),
           ),
@@ -90,7 +87,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 setState(() {
                   _name = nameController.text;
                   _email = emailController.text;
-                  _password = passwordController.text;
                 });
                 Navigator.pop(context); // Close the dialog
               },
@@ -141,6 +137,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+    final double avatarRadius = isSmallScreen ? 60 : 50;
+    final double nameFontSize = isSmallScreen ? 26 : 22;
+    final double emailFontSize = isSmallScreen ? 18 : 15;
+    final double fieldFontSize = isSmallScreen ? 17 : 14;
+    final double buttonFontSize = isSmallScreen ? 18 : 15;
+    final double buttonWidth = isSmallScreen ? 220 : 180;
+    final double buttonHeight = isSmallScreen ? 50 : 44;
+    final double cardPadding = isSmallScreen ? 20 : 16;
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Profile"),
@@ -154,17 +161,18 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Column(
+        padding: EdgeInsets.all(cardPadding),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: 20),
                 GestureDetector(
                   onTap: _pickImage,
                   child: CircleAvatar(
-                    radius: constraints.maxWidth * 0.15, // Responsive size
+                    radius: avatarRadius,
                     backgroundColor: Colors.blueGrey,
                     backgroundImage: _profileImage != null
                         ? FileImage(_profileImage!)
@@ -172,7 +180,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: _profileImage == null
                         ? Text(
                       _name.isNotEmpty ? _name[0].toUpperCase() : "U",
-                      style: TextStyle(fontSize: constraints.maxWidth * 0.1, color: Colors.white),
+                      style: TextStyle(fontSize: avatarRadius * 0.9, color: Colors.white),
                     )
                         : null,
                   ),
@@ -180,39 +188,41 @@ class _ProfilePageState extends State<ProfilePage> {
                 SizedBox(height: 10),
                 TextButton(
                   onPressed: _pickImage,
-                  child: Text("Change Profile Picture"),
+                  child: Text("Change Profile Picture", style: TextStyle(fontSize: fieldFontSize)),
                 ),
                 SizedBox(height: 20),
                 Text(
                   _name,
                   style: TextStyle(
-                    fontSize: constraints.maxWidth * 0.06, // Responsive font size
+                    fontSize: nameFontSize,
                     fontWeight: FontWeight.bold,
                     color: Colors.blueGrey,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 8),
                 Text(
                   _email,
                   style: TextStyle(
-                    fontSize: constraints.maxWidth * 0.04, // Responsive font size
+                    fontSize: emailFontSize,
                     color: Colors.grey,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 30),
                 Divider(),
                 SizedBox(height: 20),
-                _buildProfileField("Full Name", _name, constraints),
-                _buildProfileField("Email", _email, constraints),
-                _buildProfileField("Password", _password.replaceAll(RegExp(r"."), "*"), constraints), // Mask password
+                _buildProfileField("Full Name", _name, fieldFontSize),
+                _buildProfileField("Email", _email, fieldFontSize),
+                _buildProfileField("Password", _password.replaceAll(RegExp(r"."), "*"), fieldFontSize),
                 SizedBox(height: 40),
                 ElevatedButton.icon(
                   onPressed: () => _editProfile(context),
                   icon: Icon(Icons.edit),
-                  label: Text("Edit Profile"),
+                  label: Text("Edit Profile", style: TextStyle(fontSize: buttonFontSize)),
                   style: ElevatedButton.styleFrom(
                     elevation: 2.0,
-                    fixedSize: Size(constraints.maxWidth * 0.4, 50), // Responsive button size
+                    fixedSize: Size(buttonWidth, buttonHeight),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
@@ -224,24 +234,24 @@ class _ProfilePageState extends State<ProfilePage> {
                     _logout(context);
                   },
                   icon: Icon(Icons.logout),
-                  label: Text("Logout"),
+                  label: Text("Logout", style: TextStyle(fontSize: buttonFontSize)),
                   style: ElevatedButton.styleFrom(
                     elevation: 2.0,
-                    fixedSize: Size(constraints.maxWidth * 0.4, 50), // Responsive button size
+                    fixedSize: Size(buttonWidth, buttonHeight),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                   ),
                 ),
               ],
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileField(String title, String value, BoxConstraints constraints) {
+  Widget _buildProfileField(String title, String value, double fontSize) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -250,7 +260,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Text(
             "$title:",
             style: TextStyle(
-              fontSize: constraints.maxWidth * 0.04, // Responsive font size
+              fontSize: fontSize,
               fontWeight: FontWeight.bold,
               color: Colors.blueGrey,
             ),
@@ -260,7 +270,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Text(
               value,
               style: TextStyle(
-                fontSize: constraints.maxWidth * 0.04, // Responsive font size
+                fontSize: fontSize,
                 color: Colors.black87,
               ),
             ),

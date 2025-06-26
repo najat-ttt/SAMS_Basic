@@ -7,6 +7,10 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file/open_file.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:typed_data';
+import 'dart:html' as html;
 
 class AttendanceReportPage extends StatefulWidget {
   const AttendanceReportPage({super.key});
@@ -39,253 +43,296 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 800;
+    final double cardPadding = isSmallScreen ? 16 : 24;
+    final double cardFontSize = isSmallScreen ? 16 : 18;
+    final double buttonFontSize = isSmallScreen ? 16 : 15;
+    final double buttonHeight = isSmallScreen ? 48 : 40;
+    final double maxContentWidth = isSmallScreen ? double.infinity : 700;
+    final double dropdownFontSize = isSmallScreen ? 16 : 15;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Attendance Reports"),
         backgroundColor: Colors.blueGrey,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Filter Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Generate Attendance Report",
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxContentWidth),
+            child: Padding(
+              padding: EdgeInsets.all(cardPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Filter Section
+                  Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: EdgeInsets.all(cardPadding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Generate Attendance Report",
+                            style: TextStyle(
+                              fontSize: cardFontSize + 2,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: DropdownButtonFormField<String>(
+                                  value: selectedCourse,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    labelText: "Select Course",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  ),
+                                  style: TextStyle(fontSize: dropdownFontSize),
+                                  items: courses.map((course) {
+                                    return DropdownMenuItem(
+                                      value: course,
+                                      child: Text(course, overflow: TextOverflow.ellipsis),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedCourse = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                flex: 2,
+                                child: DropdownButtonFormField<String>(
+                                  value: selectedSection,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    labelText: "Select Section",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  ),
+                                  style: TextStyle(fontSize: dropdownFontSize),
+                                  items: sections.map((section) {
+                                    return DropdownMenuItem(
+                                      value: section,
+                                      child: Text("$section"),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedSection = value;
+                                      _fetchStudents();
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("Start Date"),
+                                    const SizedBox(height: 8),
+                                    InkWell(
+                                      onTap: () => _selectDate(context, true),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.grey),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(DateFormat('yyyy-MM-dd').format(startDate)),
+                                            const Icon(Icons.calendar_today),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("End Date"),
+                                    const SizedBox(height: 8),
+                                    InkWell(
+                                      onTap: () => _selectDate(context, false),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.grey),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(DateFormat('yyyy-MM-dd').format(endDate)),
+                                            const Icon(Icons.calendar_today),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: buttonHeight + 8,
+                                  child: ElevatedButton.icon(
+                                    onPressed: isLoading ? null : _generateReport,
+                                    icon: const Icon(Icons.refresh),
+                                    label: Text("Generate Report", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xFF00DDF1), // Professional blue
+                                      foregroundColor: Colors.white,
+                                      elevation: 4,
+                                      shadowColor: Color(0xFF90CAF9), // Lighter blue for shadow
+                                      padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 0 : 0),
+                                      minimumSize: Size(double.infinity, buttonHeight + 8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      textStyle: TextStyle(letterSpacing: 1.1),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: buttonHeight + 8,
+                                  child: ElevatedButton.icon(
+                                    onPressed: (attendanceData.isEmpty || isLoading) ? null : _exportToExcel,
+                                    icon: const Icon(Icons.table_chart),
+                                    label: Text("Export to Excel", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green.shade600,
+                                      foregroundColor: Colors.white,
+                                      elevation: 4,
+                                      shadowColor: Colors.green.shade100,
+                                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: isSmallScreen ? 0 : 0), // Add horizontal padding
+                                      minimumSize: Size(0, buttonHeight + 8), // Remove forced full width
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14), // Match other buttons
+                                      ),
+                                      textStyle: TextStyle(letterSpacing: 1.1),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: SizedBox(
+                                  height: buttonHeight + 8,
+                                  child: ElevatedButton.icon(
+                                    onPressed: (attendanceData.isEmpty || isLoading) ? null : _exportToPdf,
+                                    icon: const Icon(Icons.picture_as_pdf),
+                                    label: Text("Export to PDF", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red.shade600,
+                                      foregroundColor: Colors.white,
+                                      elevation: 4,
+                                      shadowColor: Colors.red.shade100,
+                                      padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 0 : 0),
+                                      minimumSize: Size(double.infinity, buttonHeight + 8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      textStyle: TextStyle(letterSpacing: 1.1),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Report Preview
+                  Expanded(
+                    child: isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : (attendanceData.isEmpty)
+                        ? const Center(
+                      child: Text(
+                        "No data to display.\nPlease select course, section and date range and generate report.",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.grey,
                         ),
                       ),
-                      const SizedBox(height: 16),
-
-                      // Course and Section Selection
-                      Row(
-                        children: [
-                          // Course Dropdown
-                          Expanded(
-                            flex: 3,
-                            child: DropdownButtonFormField<String>(
-                              value: selectedCourse,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: "Select Course",
-                                border: OutlineInputBorder(),
+                    )
+                        : Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: EdgeInsets.all(cardPadding),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              "Attendance Report: $selectedCourse - Section $selectedSection",
+                              style: TextStyle(
+                                fontSize: cardFontSize + 2,
+                                fontWeight: FontWeight.bold,
                               ),
-                              items: courses.map((course) {
-                                return DropdownMenuItem(
-                                  value: course,
-                                  child: Text(course, overflow: TextOverflow.ellipsis),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedCourse = value;
-                                });
-                              },
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Section Dropdown
-                          Expanded(
-                            flex: 2,
-                            child: DropdownButtonFormField<String>(
-                              value: selectedSection,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: "Select Section",
-                                border: OutlineInputBorder(),
+                            Text(
+                              "Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}",
+                              style: TextStyle(
+                                fontSize: cardFontSize - 2,
+                                color: Colors.grey,
                               ),
-                              items: sections.map((section) {
-                                return DropdownMenuItem(
-                                  value: section,
-                                  child: Text("$section"),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedSection = value;
-                                  _fetchStudents();
-                                });
-                              },
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Date Range Selection
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("Start Date"),
-                                const SizedBox(height: 8),
-                                InkWell(
-                                  onTap: () => _selectDate(context, true),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(DateFormat('yyyy-MM-dd').format(startDate)),
-                                        const Icon(Icons.calendar_today),
-                                      ],
-                                    ),
-                                  ),
+                            const SizedBox(height: 12),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: SingleChildScrollView(
+                                  child: _buildAttendanceTable(),
                                 ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("End Date"),
-                                const SizedBox(height: 8),
-                                InkWell(
-                                  onTap: () => _selectDate(context, false),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(DateFormat('yyyy-MM-dd').format(endDate)),
-                                        const Icon(Icons.calendar_today),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Generate Button
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: isLoading ? null : _generateReport,
-                              icon: const Icon(Icons.refresh),
-                              label: const Text("Generate Report"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 8),
-
-                      // Export Buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: (attendanceData.isEmpty || isLoading) ? null : _exportToExcel,
-                              icon: const Icon(Icons.table_chart),
-                              label: const Text("Export to Excel"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: (attendanceData.isEmpty || isLoading) ? null : _exportToPdf,
-                              icon: const Icon(Icons.picture_as_pdf),
-                              label: const Text("Export to PDF"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Report Preview
-              Expanded(
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : (attendanceData.isEmpty)
-                    ? const Center(
-                  child: Text(
-                    "No data to display.\nPlease select course, section and date range and generate report.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
                     ),
                   ),
-                )
-                    : Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          "Attendance Report: $selectedCourse - Section $selectedSection",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}",
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: SingleChildScrollView(
-                              child: _buildAttendanceTable(),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -361,7 +408,6 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       return;
     }
 
-    // Use a local variable to track loading state
     if (mounted) {
       setState(() {
         isLoading = true;
@@ -374,12 +420,10 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       // Generate list of dates between start and end date
       List<DateTime> datesInRange = [];
       for (DateTime date = startDate;
-      date.isBefore(endDate.add(const Duration(days: 1)));
-      date = date.add(const Duration(days: 1))) {
+          date.isBefore(endDate.add(const Duration(days: 1)));
+          date = date.add(const Duration(days: 1))) {
         datesInRange.add(date);
       }
-
-      // Convert to string format for Firestore queries
       datesList = datesInRange.map((date) => DateFormat('yyyy-MM-dd').format(date)).toList();
 
       // Initialize attendance data structure
@@ -390,40 +434,45 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
         }
       }
 
-      // Fetch attendance data for each date
+      // Fetch all attendance records for the section and date range in parallel
+      final List<Future<void>> fetchFutures = [];
       for (var dateStr in datesList) {
-        final sectionRef = _firestore
+        fetchFutures.add(_firestore
             .collection('attendance_records')
             .doc(dateStr)
             .collection('sections')
-            .doc(selectedSection);
-
-        // Get all rolls for this section and date
-        for (var student in students) {
-          final String rollNo = student['id'];
-
-          final courseDoc = await sectionRef
-              .collection('rolls')
-              .doc(rollNo)
-              .collection('courses')
-              .doc(selectedCourse)
-              .get();
-
-          if (courseDoc.exists) {
-            String status = courseDoc.data()?['status'] ?? '-';
-            attendanceData[rollNo]![dateStr] = status == 'Present' ? 'P' : 'A';
+            .doc(selectedSection)
+            .collection('rolls')
+            .get()
+            .then((rollsSnapshot) async {
+          if (rollsSnapshot.docs.isEmpty) return;
+          final List<Future<void>> courseFutures = [];
+          for (var rollDoc in rollsSnapshot.docs) {
+            final rollNo = rollDoc.id;
+            courseFutures.add(rollDoc.reference
+                .collection('courses')
+                .doc(selectedCourse)
+                .get()
+                .then((courseDoc) {
+              if (courseDoc.exists) {
+                String status = courseDoc.data()?['status'] ?? '-';
+                if (attendanceData.containsKey(rollNo) && attendanceData[rollNo]!.containsKey(dateStr)) {
+                  attendanceData[rollNo]![dateStr] = status == 'Present' ? 'P' : 'A';
+                }
+              }
+            }));
           }
-        }
+          await Future.wait(courseFutures);
+        }));
       }
+      await Future.wait(fetchFutures);
 
-      // Check if widget is still mounted before updating state
       if (mounted) {
         setState(() {
           isLoading = false;
         });
       }
     } catch (e) {
-      // Check if widget is still mounted before updating state
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -544,6 +593,24 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
     );
   }
 
+  Future<String?> _pickExportLocation(String fileName, String fileType) async {
+    String? savePath;
+    try {
+      String? result = await FilePicker.platform.saveFile(
+        dialogTitle: 'Select location to save $fileName',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: [fileType],
+      );
+      if (result != null && result.isNotEmpty) {
+        savePath = result;
+      }
+    } catch (e) {
+      // ignore
+    }
+    return savePath;
+  }
+
   Future<void> _exportToExcel() async {
     try {
       if (mounted) {
@@ -551,7 +618,6 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
           isLoading = true;
         });
       }
-
       final excel_lib.Excel excel = excel_lib.Excel.createExcel();
       final excel_lib.Sheet sheet = excel['Attendance Report'];
       final percentages = _calculateAttendancePercentages();
@@ -608,16 +674,34 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       }
 
       // Save the file
-      final directory = await getApplicationDocumentsDirectory();
       final fileName = 'attendance_report_${DateFormat('yyyy_MM_dd').format(DateTime.now())}.xlsx';
-      final path = '${directory.path}/$fileName';
-
       final fileBytes = excel.encode();
+      if (kIsWeb) {
+        // Web: trigger download using AnchorElement
+        final content = Uint8List.fromList(fileBytes!);
+        final blob = html.Blob([content]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', fileName)
+          ..click();
+        html.Url.revokeObjectUrl(url);
+        if (mounted) {
+          setState(() { isLoading = false; });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Excel file downloaded!")),
+          );
+        }
+        return;
+      }
+      // Desktop/Mobile: use file picker
+      String? path = await _pickExportLocation(fileName, 'xlsx');
+      if (path == null) {
+        if (mounted) setState(() { isLoading = false; });
+        return;
+      }
       final file = File(path);
       await file.writeAsBytes(fileBytes!);
-
       await OpenFile.open(path);
-
       if (mounted) {
         setState(() {
           isLoading = false;
@@ -671,13 +755,33 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       );
 
       // Save the file
-      final directory = await getApplicationDocumentsDirectory();
       final fileName = 'attendance_report_${DateFormat('yyyy_MM_dd').format(DateTime.now())}.pdf';
-      final path = '${directory.path}/$fileName';
-
+      final pdfBytes = await pdf.save();
+      if (kIsWeb) {
+        // Web: trigger download using AnchorElement
+        final content = Uint8List.fromList(pdfBytes);
+        final blob = html.Blob([content]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', fileName)
+          ..click();
+        html.Url.revokeObjectUrl(url);
+        if (mounted) {
+          setState(() { isLoading = false; });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("PDF file downloaded!")),
+          );
+        }
+        return;
+      }
+      // Desktop/Mobile: use file picker
+      String? path = await _pickExportLocation(fileName, 'pdf');
+      if (path == null) {
+        if (mounted) setState(() { isLoading = false; });
+        return;
+      }
       final file = File(path);
-      await file.writeAsBytes(await pdf.save());
-
+      await file.writeAsBytes(pdfBytes);
       await OpenFile.open(path);
 
       if (mounted) {
