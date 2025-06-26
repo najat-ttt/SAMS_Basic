@@ -381,6 +381,7 @@ class _AttendancePageState extends State<AttendancePage> {
     });
 
     try {
+      // Only fetch students, no attendance data
       final querySnapshot = await _firestore
           .collection('students')
           .where('section', isEqualTo: selectedSection)
@@ -398,7 +399,7 @@ class _AttendancePageState extends State<AttendancePage> {
         };
       }).toList();
 
-      await _checkForExistingSession();
+      setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error fetching students: $e")),
@@ -752,27 +753,47 @@ class _AttendancePageState extends State<AttendancePage> {
     });
 
     try {
-      // Fetch students for this section
-      final querySnapshot = await _firestore
+      // Fetch students and attendance in parallel for speed
+      final studentsFuture = _firestore
           .collection('students')
           .where('section', isEqualTo: selectedSection)
           .orderBy('roll')
           .get();
-
-      students = querySnapshot.docs.map((doc) {
-        final data = doc.data();
+      final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate!);
+      final rollsFuture = _firestore
+          .collection('attendance_records')
+          .doc(dateStr)
+          .collection('sections')
+          .doc(selectedSection)
+          .collection('rolls')
+          .get();
+      final results = await Future.wait([studentsFuture, rollsFuture]);
+      final studentsSnapshot = results[0] as QuerySnapshot;
+      final rollsSnapshot = results[1] as QuerySnapshot;
+      // Build a map of rollNo to status for this course
+      final Map<String, String> rollStatus = {};
+      // Fetch all course docs in parallel for speed
+      final List<Future> courseDocFutures = rollsSnapshot.docs.map((rollDoc) {
+        final rollNo = rollDoc.id;
+        return rollDoc.reference.collection('courses').doc(selectedCourse).get().then((courseDoc) {
+          if (courseDoc.exists) {
+            rollStatus[rollNo] = courseDoc.data()?['status'] ?? 'Absent';
+          }
+        });
+      }).toList();
+      await Future.wait(courseDocFutures);
+      students = studentsSnapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        final rollNo = data['roll']?.toString() ?? '0';
         return {
           "rollNo": data['roll'] ?? 0,
-          "id": data['roll']?.toString() ?? '0',
+          "id": rollNo,
           "name": data['name'] ?? 'Unknown',
-          "status": "Absent",
+          "status": rollStatus[rollNo] ?? 'Absent',
           "documentId": doc.id,
         };
       }).toList();
-
-      // Load attendance data from the selected previous session
-      await _loadExistingAttendance();
-
+      setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Previous session loaded for editing")),
       );

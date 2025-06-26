@@ -209,10 +209,10 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                                     icon: const Icon(Icons.refresh),
                                     label: Text("Generate Report", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF00DDF1), // Professional blue
+                                      backgroundColor: Color(0xFF00DDF1),
                                       foregroundColor: Colors.white,
                                       elevation: 4,
-                                      shadowColor: Color(0xFF90CAF9), // Lighter blue for shadow
+                                      shadowColor: Color(0xFF90CAF9),
                                       padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 0 : 0),
                                       minimumSize: Size(double.infinity, buttonHeight + 8),
                                       shape: RoundedRectangleBorder(
