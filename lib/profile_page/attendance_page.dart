@@ -97,7 +97,7 @@ class _AttendancePageState extends State<AttendancePage> {
                               Icon(Icons.calendar_today, color: Colors.blueGrey),
                               const SizedBox(width: 5),
                               Text(
-                                "Date: "+DateFormat('yyyy-MM-dd').format(selectedDate),
+                                "Date: "+DateFormat('dd-MM-yyyy').format(selectedDate),
                                 style: TextStyle(
                                   fontSize: cardFontSize,
                                   fontWeight: FontWeight.bold,
@@ -115,7 +115,7 @@ class _AttendancePageState extends State<AttendancePage> {
                           Row(
                             children: [
                               Expanded(
-                                flex: 3,
+                                flex: 2,
                                 child: DropdownButtonFormField<String>(
                                   value: selectedCourse,
                                   isExpanded: true,
@@ -189,8 +189,8 @@ class _AttendancePageState extends State<AttendancePage> {
                             children: [
                               Text(
                                 isEditingPreviousSession
-                                    ? "Editing Attendance - "+DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)
-                                    : "Attendance Session - "+DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate),
+                                    ? "Editing Attendance - "+DateFormat('dd-MM-yyyy').format(currentSessionDate ?? selectedDate)
+                                    : "Attendance Session - "+DateFormat('dd-MM-yyyy').format(currentSessionDate ?? selectedDate),
                                 style: TextStyle(
                                   fontSize: cardFontSize + 2,
                                   fontWeight: FontWeight.bold,
@@ -209,7 +209,7 @@ class _AttendancePageState extends State<AttendancePage> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green,
                                     ),
-                                    child: const Text("Mark All Present"),
+                                    child: const Text("Mark All Present",style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                                   ),
                                 ],
                               ),
@@ -259,36 +259,36 @@ class _AttendancePageState extends State<AttendancePage> {
                         children: [
                           if (!isEditingPreviousSession)
                             SizedBox(
-                              height: buttonHeight + 8,
+                              height: buttonHeight + 4,
                               child: ElevatedButton(
                                 onPressed: currentSessionId == null ? _startNewSession : null,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
-                                  minimumSize: Size(150, buttonHeight),
+                                  minimumSize: Size(100, buttonHeight),
                                 ),
-                                child: Text("New Session", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
+                                child: Text("New Session", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold, color: currentSessionId == null ? Colors.white : Colors.blueGrey)),
                               ),
                             ),
                           if (currentSessionId != null && !isEditingPreviousSession)
                             SizedBox(
-                              height: buttonHeight + 8,
+                              height: buttonHeight + 4,
                               child: ElevatedButton(
                                 onPressed: _endCurrentSession,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red,
-                                  minimumSize: Size(150, buttonHeight),
+                                  minimumSize: Size(100, buttonHeight),
                                 ),
-                                child: Text("End Session", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
+                                child: Text("End Session", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold, color: Colors.white)),
                               ),
                             ),
                           if (isEditingPreviousSession)
                             SizedBox(
-                              height: buttonHeight + 8,
+                              height: buttonHeight + 4,
                               child: ElevatedButton(
                                 onPressed: _saveEditedAttendance,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
-                                  minimumSize: Size(150, buttonHeight),
+                                  minimumSize: Size(100, buttonHeight),
                                 ),
                                 child: Text("Save Changes", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
                               ),
@@ -414,7 +414,7 @@ class _AttendancePageState extends State<AttendancePage> {
   Future<void> _checkForExistingSession() async {
     if (selectedCourse == null || selectedSection == null) return;
 
-    final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+    final dateStr = DateFormat('dd-MM-yyyy').format(selectedDate);
 
     try {
       final sessionQuery = await _firestore
@@ -447,7 +447,7 @@ class _AttendancePageState extends State<AttendancePage> {
   Future<void> _loadExistingAttendance() async {
     if (selectedCourse == null || selectedSection == null || currentSessionDate == null) return;
 
-    final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate!);
+    final dateStr = DateFormat('dd-MM-yyyy').format(currentSessionDate!);
 
     try {
       for (var student in students) {
@@ -486,7 +486,7 @@ class _AttendancePageState extends State<AttendancePage> {
     });
 
     try {
-      final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
+      final dateStr = DateFormat('dd-MM-yyyy').format(selectedDate);
 
       // Create new session
       final sessionDoc = await _firestore.collection('attendance_sessions').add({
@@ -526,7 +526,7 @@ class _AttendancePageState extends State<AttendancePage> {
     }
 
     final student = students[index];
-    final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate);
+    final dateStr = DateFormat('dd-MM-yyyy').format(currentSessionDate ?? selectedDate);
 
     try {
       setState(() {
@@ -759,7 +759,7 @@ class _AttendancePageState extends State<AttendancePage> {
           .where('section', isEqualTo: selectedSection)
           .orderBy('roll')
           .get();
-      final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate!);
+      final dateStr = DateFormat('dd-MM-yyyy').format(currentSessionDate!);
       final rollsFuture = _firestore
           .collection('attendance_records')
           .doc(dateStr)
@@ -822,7 +822,7 @@ class _AttendancePageState extends State<AttendancePage> {
     });
 
     try {
-      final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate!);
+      final dateStr = DateFormat('dd-MM-yyyy').format(currentSessionDate!);
       final batch = _firestore.batch();
 
       // Update the timestamp at date level

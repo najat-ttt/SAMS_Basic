@@ -161,7 +161,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(DateFormat('yyyy-MM-dd').format(startDate)),
+                                            Text(DateFormat('dd-MM-yyyy').format(startDate)),
                                             const Icon(Icons.calendar_today),
                                           ],
                                         ),
@@ -188,7 +188,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(DateFormat('yyyy-MM-dd').format(endDate)),
+                                            Text(DateFormat('dd-MM-yyyy').format(endDate)),
                                             const Icon(Icons.calendar_today),
                                           ],
                                         ),
@@ -204,13 +204,13 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                             children: [
                               Expanded(
                                 child: SizedBox(
-                                  height: buttonHeight + 8,
+                                  height: buttonHeight + 4,
                                   child: ElevatedButton.icon(
                                     onPressed: isLoading ? null : _generateReport,
                                     icon: const Icon(Icons.refresh),
                                     label: Text("Generate Report", style: TextStyle(fontSize: buttonFontSize, fontWeight: FontWeight.bold)),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF00DDF1),
+                                      backgroundColor: Colors.cyan.shade500,
                                       foregroundColor: Colors.white,
                                       elevation: 4,
                                       shadowColor: Color(0xFF90CAF9),
@@ -231,7 +231,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                             children: [
                               Expanded(
                                 child: SizedBox(
-                                  height: buttonHeight + 8,
+                                  height: buttonHeight + 4,
                                   child: ElevatedButton.icon(
                                     onPressed: (attendanceData.isEmpty || isLoading) ? null : _exportToExcel,
                                     icon: const Icon(Icons.table_chart),
@@ -254,7 +254,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: SizedBox(
-                                  height: buttonHeight + 8,
+                                  height: buttonHeight + 4,
                                   child: ElevatedButton.icon(
                                     onPressed: (attendanceData.isEmpty || isLoading) ? null : _exportToPdf,
                                     icon: const Icon(Icons.picture_as_pdf),
@@ -311,7 +311,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                               ),
                             ),
                             Text(
-                              "Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}",
+                              "Period: [${DateFormat('dd-MM-yyyy').format(startDate)} to ${DateFormat('dd-MM-yyyy').format(endDate)}]",
                               style: TextStyle(
                                 fontSize: cardFontSize - 2,
                                 color: Colors.grey,
@@ -425,7 +425,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
           date = date.add(const Duration(days: 1))) {
         datesInRange.add(date);
       }
-      datesList = datesInRange.map((date) => DateFormat('yyyy-MM-dd').format(date)).toList();
+      datesList = datesInRange.map((date) => DateFormat('dd-MM-yyyy').format(date)).toList();
 
       // Initialize attendance data structure
       for (var student in students) {
@@ -584,7 +584,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                 '${percentage.toStringAsFixed(1)}%',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: percentage >= 75 ? Colors.green : Colors.red,
+                  color: percentage >= 50 ? Colors.green : Colors.red,
                 ),
               ),
             ),
@@ -631,7 +631,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       courseCell.value = excel_lib.TextCellValue('$selectedCourse - Section $selectedSection');
 
       final periodCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2));
-      periodCell.value = excel_lib.TextCellValue('Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}');
+      periodCell.value = excel_lib.TextCellValue('Period: ${DateFormat('dd-MM-yyyy').format(startDate)} to ${DateFormat('dd-MM-yyyy').format(endDate)}');
 
       // Add table headers
       final rollHeaderCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 4));
@@ -675,7 +675,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       }
 
       // Save the file
-      final fileName = 'attendance_report_${DateFormat('yyyy_MM_dd').format(DateTime.now())}.xlsx';
+      final fileName = 'attendance_report_${DateFormat('dd_MM_yyyy').format(DateTime.now())}.xlsx';
       final fileBytes = excel.save();
       if (kIsWeb) {
         // Convert List<int> to Uint8List for web
@@ -689,8 +689,14 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
         }
         return;
       }
-      // Desktop/Mobile: use file picker
-      String? path = await _pickExportLocation(fileName, 'xlsx');
+      // Desktop/Mobile: use file picker (desktop) or save to documents directory (mobile)
+      String? path;
+      if (Platform.isAndroid || Platform.isIOS) {
+        final directory = await getApplicationDocumentsDirectory();
+        path = '${directory.path}/$fileName';
+      } else {
+        path = await _pickExportLocation(fileName, 'xlsx');
+      }
       if (path == null) {
         if (mounted) setState(() { isLoading = false; });
         return;
@@ -741,7 +747,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
               pw.SizedBox(height: 8),
               pw.Text('$selectedCourse - Section $selectedSection', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 4),
-              pw.Text('Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}',
+              pw.Text('Period: ${DateFormat('dd-MM-yyyy').format(startDate)} to ${DateFormat('dd-MM-yyyy').format(endDate)}',
                   style: pw.TextStyle(fontSize: 12, color: PdfColors.grey)),
               pw.SizedBox(height: 20),
               _buildPdfTable(),
@@ -751,7 +757,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       );
 
       // Save the file
-      final fileName = 'attendance_report_${DateFormat('yyyy_MM_dd').format(DateTime.now())}.pdf';
+      final fileName = 'attendance_report_${DateFormat('dd_MM_yyyy').format(DateTime.now())}.pdf';
       final pdfBytes = await pdf.save();
       if (kIsWeb) {
         await saveFileWeb(pdfBytes, fileName, 'application/pdf');
@@ -763,8 +769,14 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
         }
         return;
       }
-      // Desktop/Mobile: use file picker
-      String? path = await _pickExportLocation(fileName, 'pdf');
+      // Desktop/Mobile: use file picker (desktop) or save to documents directory (mobile)
+      String? path;
+      if (Platform.isAndroid || Platform.isIOS) {
+        final directory = await getApplicationDocumentsDirectory();
+        path = '${directory.path}/$fileName';
+      } else {
+        path = await _pickExportLocation(fileName, 'pdf');
+      }
       if (path == null) {
         if (mounted) setState(() { isLoading = false; });
         return;
@@ -798,28 +810,29 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
 
     return pw.Table(
       border: pw.TableBorder.all(color: PdfColors.grey300),
+      defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
       children: [
         // Header row
         pw.TableRow(
           decoration: const pw.BoxDecoration(color: PdfColors.grey200),
           children: [
             pw.Padding(
-              padding: const pw.EdgeInsets.all(8),
-              child: pw.Text('Roll', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              padding: const pw.EdgeInsets.all(4),
+              child: pw.Text('Roll', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
             ),
             pw.Padding(
-              padding: const pw.EdgeInsets.all(8),
-              child: pw.Text('Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              padding: const pw.EdgeInsets.all(4),
+              child: pw.Text('Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
             ),
             ...datesList.map(
                   (dateStr) => pw.Padding(
-                padding: const pw.EdgeInsets.all(8),
-                child: pw.Text(dateStr, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                padding: const pw.EdgeInsets.all(2),
+                child: pw.Text(dateStr, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 6)),
               ),
             ),
             pw.Padding(
-              padding: const pw.EdgeInsets.all(8),
-              child: pw.Text('Attendance %', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              padding: const pw.EdgeInsets.all(4),
+              child: pw.Text('Attendance %', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 7)),
             ),
           ],
         ),
@@ -830,22 +843,29 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
               return pw.TableRow(
                 children: [
                   pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text(student['id']),
+                    padding: const pw.EdgeInsets.all(2),
+                    child: pw.Text(
+                      student['id'].toString().length > 4
+                        ? student['id'].toString().substring(0, 4) + '\n' + student['id'].toString().substring(4)
+                        : student['id'].toString(),
+                      style: pw.TextStyle(fontSize: 6),
+                      softWrap: true,
+                    ),
                   ),
                   pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text(student['name']),
+                    padding: const pw.EdgeInsets.all(2),
+                    child: pw.Text(student['name'], style: pw.TextStyle(fontSize: 6)),
                   ),
                   ...datesList.map(
                         (dateStr) {
                       final status = attendanceData[student['id']]![dateStr] ?? '-';
                       return pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
+                        padding: const pw.EdgeInsets.all(1),
                         child: pw.Center(
                           child: pw.Text(
                             status,
                             style: pw.TextStyle(
+                              fontSize: 6,
                               color: status == 'P'
                                   ? PdfColors.green
                                   : (status == 'A' ? PdfColors.red : PdfColors.grey),
@@ -857,10 +877,11 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                     },
                   ),
                   pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
+                    padding: const pw.EdgeInsets.all(2),
                     child: pw.Text(
                       '${percentage.toStringAsFixed(1)}%',
                       style: pw.TextStyle(
+                        fontSize: 6,
                         color: percentage >= 75 ? PdfColors.green : PdfColors.red,
                         fontWeight: pw.FontWeight.bold,
                       ),

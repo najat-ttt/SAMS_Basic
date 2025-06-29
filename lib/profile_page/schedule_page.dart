@@ -13,7 +13,7 @@ class SchedulePage extends StatelessWidget {
       body: Center(
         child: Text(
           "Page Under Construction",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueGrey),
         ),
       ),
     );

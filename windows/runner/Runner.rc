@@ -94,7 +94,7 @@ BEGIN
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "SAMS" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 Najat. All rights reserved." "\0"
-            VALUE "OriginalFilename", "untitled.exe" "\0"
+            VALUE "OriginalFilename", "SAMS.exe" "\0"
             VALUE "ProductName", "SAMS" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
