@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../profile_page/dashboard_page.dart';
+import '../profile_page/course_teacher_dashboard_page.dart';
+import '../profile_page/course_advisor_dashboard_page.dart';
+import '../profile_page/department_head_dashboard_page.dart';
+import '../profile_page/student_dashboard_page.dart';
 import 'signup_page.dart';
 import 'forgot_password_page.dart';
 
@@ -63,15 +66,45 @@ class _LoginPageState extends State<LoginPage> {
 
         print("Login successful. Navigating to Dashboard...");
 
-        // Navigate to DashboardPage
+        // Role-based navigation
+        Widget destination;
+        if (role == 'Course Teacher') {
+          destination = CourseTeacherDashboardPage(
+            name: user.displayName ?? "User",
+            email: user.email ?? "",
+            role: role,
+          );
+        } else if (role == 'Course Advisor') {
+          destination = CourseAdvisorDashboardPage(
+            name: user.displayName ?? "User",
+            email: user.email ?? "",
+            role: role,
+          );
+        } else if (role == 'Department Head') {
+          destination = DepartmentHeadDashboardPage(
+            name: user.displayName ?? "User",
+            email: user.email ?? "",
+            role: role,
+          );
+        } else if (role == 'Student') {
+          destination = StudentDashboardPage(
+            name: user.displayName ?? "User",
+            email: user.email ?? "",
+            role: role,
+          );
+        } else {
+          destination = CourseTeacherDashboardPage(
+            name: user.displayName ?? "User",
+            email: user.email ?? "",
+            role: role,
+          );
+        }
+
+        // Navigate to the selected page
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => DashboardPage(
-              name: user.displayName ?? "User",
-              email: user.email ?? "",
-              role: role,
-            ),
+            builder: (context) => destination,
           ),
         );
       } on FirebaseAuthException catch (e) {

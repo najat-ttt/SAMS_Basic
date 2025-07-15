@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
 import 'login_page/login_page.dart';
-import 'profile_page/dashboard_page.dart';
+import 'profile_page/course_teacher_dashboard_page.dart';
+import 'profile_page/course_advisor_dashboard_page.dart';
+import 'profile_page/department_head_dashboard_page.dart';
+import 'profile_page/student_dashboard_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -118,12 +121,39 @@ class LoginPageWrapper extends StatelessWidget {
 
                 String role = firestoreSnapshot.data?.get('role') ?? 'Course Teacher';
 
-                // Navigate to DashboardPage if email is verified
-                return DashboardPage(
-                  name: user.displayName ?? "User",
-                  email: user.email ?? "",
-                  role: role,
-                );
+                // Role-based dashboard navigation
+                if (role == 'Course Teacher') {
+                  return CourseTeacherDashboardPage(
+                    name: user.displayName ?? "User",
+                    email: user.email ?? "",
+                    role: role,
+                  );
+                } else if (role == 'Course Advisor') {
+                  return CourseAdvisorDashboardPage(
+                    name: user.displayName ?? "User",
+                    email: user.email ?? "",
+                    role: role,
+                  );
+                } else if (role == 'Department Head') {
+                  return DepartmentHeadDashboardPage(
+                    name: user.displayName ?? "User",
+                    email: user.email ?? "",
+                    role: role,
+                  );
+                } else if (role == 'Student') {
+                  return StudentDashboardPage(
+                    name: user.displayName ?? "User",
+                    email: user.email ?? "",
+                    role: role,
+                  );
+                } else {
+                  // Default fallback
+                  return StudentDashboardPage(
+                    name: user.displayName ?? "User",
+                    email: user.email ?? "",
+                    role: role,
+                  );
+                }
               },
             );
           } else {

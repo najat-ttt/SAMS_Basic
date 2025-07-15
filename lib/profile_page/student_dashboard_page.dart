@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'attendance_page.dart';
-import 'reports_page.dart';
+import 'profile_page.dart';
 import 'schedule_page.dart';
 import '../login_page/login_page.dart';
-import 'profile_page.dart';
 
-class DashboardPage extends StatelessWidget {
+class StudentDashboardPage extends StatelessWidget {
   final String name;
   final String email;
   final String role;
 
-  const DashboardPage({super.key,
+  const StudentDashboardPage({
+    super.key,
     required this.name,
     required this.email,
     required this.role,
@@ -36,7 +35,7 @@ class DashboardPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Dashboard"),
+        title: const Text("Student Dashboard"),
         backgroundColor: Colors.blueGrey,
         actions: [
           IconButton(
@@ -77,7 +76,7 @@ class DashboardPage extends StatelessWidget {
             const SizedBox(height: 20),
             const Center(
               child: Text(
-                "Quick Actions",
+                "Student Actions",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -118,22 +117,6 @@ class DashboardPage extends StatelessWidget {
                       cardPadding: cardPadding,
                     ),
                     _buildDashboardCard(
-                      icon: Icons.check_circle,
-                      title: "Attendance",
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AttendancePage(),
-                          ),
-                        );
-                      },
-                      cardSize: cardSize,
-                      iconSize: iconSize,
-                      fontSize: fontSize,
-                      cardPadding: cardPadding,
-                    ),
-                    _buildDashboardCard(
                       icon: Icons.calendar_today,
                       title: "Schedule",
                       onTap: () {
@@ -150,14 +133,26 @@ class DashboardPage extends StatelessWidget {
                       cardPadding: cardPadding,
                     ),
                     _buildDashboardCard(
-                      icon: Icons.analytics,
-                      title: "Reports",
+                      icon: Icons.assignment,
+                      title: "View Attendance",
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AttendanceReportPage(),
-                          ),
+                        // TODO: Implement view attendance page
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("View Attendance action")),
+                        );
+                      },
+                      cardSize: cardSize,
+                      iconSize: iconSize,
+                      fontSize: fontSize,
+                      cardPadding: cardPadding,
+                    ),
+                    _buildDashboardCard(
+                      icon: Icons.book,
+                      title: "Course Details",
+                      onTap: () {
+                        // TODO: Implement course details page
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Course Details action")),
                         );
                       },
                       cardSize: cardSize,
@@ -174,7 +169,6 @@ class DashboardPage extends StatelessWidget {
       ),
     );
   }
-
 
   Widget _buildDashboardCard({
     required IconData icon,
@@ -223,3 +217,4 @@ class DashboardPage extends StatelessWidget {
     );
   }
 }
+

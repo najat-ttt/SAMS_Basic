@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../profile_page/dashboard_page.dart';
+import '../profile_page/course_teacher_dashboard_page.dart';
 import 'login_page.dart';
 
 class SignupPage extends StatefulWidget {
@@ -24,7 +24,8 @@ class _SignupPageState extends State<SignupPage> {
   final List<String> _roles = [
     'Course Teacher',
     'Course Advisor',
-    'Department Head'
+    'Department Head',
+    'Student',
   ]; // Available roles
 
   final _formKey = GlobalKey<FormState>(); // Form key for validation
@@ -269,6 +270,8 @@ class _SignupPageState extends State<SignupPage> {
         return Colors.blueGrey; // Purple for Course Advisor
       case 'Department Head':
         return Colors.blueGrey; // Green for Department Head
+      case 'Student':
+        return Colors.blueGrey; // Orange for Student
       default:
         return Colors.black; // Default color
     }
@@ -300,8 +303,9 @@ class _SignupPageState extends State<SignupPage> {
         // Update the user's display name
         await user.updateDisplayName(nameController.text.trim());
 
-        // Store user data in Firestore
+        // Save user info and role to Firestore
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'uid': user.uid,
           'name': nameController.text.trim(),
           'email': emailController.text.trim(),
           'role': _selectedRole,
