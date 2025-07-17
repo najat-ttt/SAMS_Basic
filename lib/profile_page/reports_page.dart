@@ -161,7 +161,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(DateFormat('dd-MM-yyyy').format(startDate)),
+                                            Text(DateFormat('yyyy-MM-dd').format(startDate)),
                                             const Icon(Icons.calendar_today),
                                           ],
                                         ),
@@ -188,7 +188,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(DateFormat('dd-MM-yyyy').format(endDate)),
+                                            Text(DateFormat('yyyy-MM-dd').format(endDate)),
                                             const Icon(Icons.calendar_today),
                                           ],
                                         ),
@@ -311,7 +311,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                               ),
                             ),
                             Text(
-                              "Period: [${DateFormat('dd-MM-yyyy').format(startDate)} to ${DateFormat('dd-MM-yyyy').format(endDate)}]",
+                              "Period: [${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}]",
                               style: TextStyle(
                                 fontSize: cardFontSize - 2,
                                 color: Colors.grey,
@@ -421,11 +421,11 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       // Generate list of dates between start and end date
       List<DateTime> datesInRange = [];
       for (DateTime date = startDate;
-          date.isBefore(endDate.add(const Duration(days: 1)));
-          date = date.add(const Duration(days: 1))) {
+      date.isBefore(endDate.add(const Duration(days: 1)));
+      date = date.add(const Duration(days: 1))) {
         datesInRange.add(date);
       }
-      datesList = datesInRange.map((date) => DateFormat('dd-MM-yyyy').format(date)).toList();
+      datesList = datesInRange.map((date) => DateFormat('yyyy-MM-dd').format(date)).toList();
 
       // Initialize attendance data structure
       for (var student in students) {
@@ -631,7 +631,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
       courseCell.value = excel_lib.TextCellValue('$selectedCourse - Section $selectedSection');
 
       final periodCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 2));
-      periodCell.value = excel_lib.TextCellValue('Period: ${DateFormat('dd-MM-yyyy').format(startDate)} to ${DateFormat('dd-MM-yyyy').format(endDate)}');
+      periodCell.value = excel_lib.TextCellValue('Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}');
 
       // Add table headers
       final rollHeaderCell = sheet.cell(excel_lib.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 4));
@@ -747,7 +747,7 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
               pw.SizedBox(height: 8),
               pw.Text('$selectedCourse - Section $selectedSection', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 4),
-              pw.Text('Period: ${DateFormat('dd-MM-yyyy').format(startDate)} to ${DateFormat('dd-MM-yyyy').format(endDate)}',
+              pw.Text('Period: ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}',
                   style: pw.TextStyle(fontSize: 12, color: PdfColors.grey)),
               pw.SizedBox(height: 20),
               _buildPdfTable(),
@@ -846,8 +846,8 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
                     padding: const pw.EdgeInsets.all(2),
                     child: pw.Text(
                       student['id'].toString().length > 4
-                        ? student['id'].toString().substring(0, 4) + '\n' + student['id'].toString().substring(4)
-                        : student['id'].toString(),
+                          ? student['id'].toString().substring(0, 4) + '\n' + student['id'].toString().substring(4)
+                          : student['id'].toString(),
                       style: pw.TextStyle(fontSize: 6),
                       softWrap: true,
                     ),
@@ -894,3 +894,4 @@ class _AttendanceReportPageState extends State<AttendanceReportPage> {
     );
   }
 }
+
