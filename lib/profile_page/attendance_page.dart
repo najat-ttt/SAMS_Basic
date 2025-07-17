@@ -97,7 +97,7 @@ class _AttendancePageState extends State<AttendancePage> {
                               Icon(Icons.calendar_today, color: Colors.blueGrey),
                               const SizedBox(width: 5),
                               Text(
-                                "Date: "+DateFormat('dd-MM-yyyy').format(selectedDate),
+                                "Date: "+DateFormat('yyyy-MM-dd').format(selectedDate),
                                 style: TextStyle(
                                   fontSize: cardFontSize,
                                   fontWeight: FontWeight.bold,
@@ -189,8 +189,8 @@ class _AttendancePageState extends State<AttendancePage> {
                             children: [
                               Text(
                                 isEditingPreviousSession
-                                    ? "Editing Attendance - "+DateFormat('dd-MM-yyyy').format(currentSessionDate ?? selectedDate)
-                                    : "Attendance Session - "+DateFormat('dd-MM-yyyy').format(currentSessionDate ?? selectedDate),
+                                    ? "Editing Attendance - "+DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate)
+                                    : "Attendance Session - "+DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate),
                                 style: TextStyle(
                                   fontSize: cardFontSize + 2,
                                   fontWeight: FontWeight.bold,
@@ -414,7 +414,7 @@ class _AttendancePageState extends State<AttendancePage> {
   Future<void> _checkForExistingSession() async {
     if (selectedCourse == null || selectedSection == null) return;
 
-    final dateStr = DateFormat('dd-MM-yyyy').format(selectedDate);
+    final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
 
     try {
       final sessionQuery = await _firestore
@@ -447,7 +447,7 @@ class _AttendancePageState extends State<AttendancePage> {
   Future<void> _loadExistingAttendance() async {
     if (selectedCourse == null || selectedSection == null || currentSessionDate == null) return;
 
-    final dateStr = DateFormat('dd-MM-yyyy').format(currentSessionDate!);
+    final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate!);
 
     try {
       for (var student in students) {
@@ -486,7 +486,7 @@ class _AttendancePageState extends State<AttendancePage> {
     });
 
     try {
-      final dateStr = DateFormat('dd-MM-yyyy').format(selectedDate);
+      final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate);
 
       // Create new session
       final sessionDoc = await _firestore.collection('attendance_sessions').add({
@@ -526,7 +526,7 @@ class _AttendancePageState extends State<AttendancePage> {
     }
 
     final student = students[index];
-    final dateStr = DateFormat('dd-MM-yyyy').format(currentSessionDate ?? selectedDate);
+    final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate ?? selectedDate);
 
     try {
       setState(() {
@@ -759,7 +759,7 @@ class _AttendancePageState extends State<AttendancePage> {
           .where('section', isEqualTo: selectedSection)
           .orderBy('roll')
           .get();
-      final dateStr = DateFormat('dd-MM-yyyy').format(currentSessionDate!);
+      final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate!);
       final rollsFuture = _firestore
           .collection('attendance_records')
           .doc(dateStr)
@@ -822,7 +822,7 @@ class _AttendancePageState extends State<AttendancePage> {
     });
 
     try {
-      final dateStr = DateFormat('dd-MM-yyyy').format(currentSessionDate!);
+      final dateStr = DateFormat('yyyy-MM-dd').format(currentSessionDate!);
       final batch = _firestore.batch();
 
       // Update the timestamp at date level
